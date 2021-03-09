@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(variable_stranding)
+include_directories(./include)
+aux_source_directory(./src DIR_SRCS)
+set(CMAKE_CXX_STANDARD 11)
+add_executable(variable_stranding main.cpp src/global.cpp include/global.h src/variable_stranding.cpp include/variable_stranding.h)
