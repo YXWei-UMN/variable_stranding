@@ -8,7 +8,7 @@
 
 variable_stranding::variable_stranding(string blastfile) {
 
-    nts_=vector<int8_t>(g_total_strand_number,0);
+    nts_.resize(g_total_nt_number,0);
 
 
     fstream result_file(blastfile,ios::in);
@@ -45,6 +45,7 @@ variable_stranding::variable_stranding(string blastfile) {
         collision_num_++;
         long start = stol(start_pos)>stol(end_pos)?stol(end_pos):stol(start_pos);
         long end = stol(start_pos)<stol(end_pos)?stol(end_pos):stol(start_pos);
+
         for (long i = start; i <= end; ++i) {
             nts_[i-1]++;
         }

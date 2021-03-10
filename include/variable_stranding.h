@@ -9,12 +9,14 @@
 #include <unordered_map>
 #include <vector>
 #include "global.h"
+
 using namespace std;
 
 class variable_stranding {
 public:
     // how many collisions have go across the ith nt
-    vector<int8_t> nts_;
+    vector<int> nts_;
+
     int collision_num_=0;
 
     variable_stranding(string blastfile);
