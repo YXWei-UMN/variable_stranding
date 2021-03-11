@@ -35,13 +35,11 @@ using namespace std;
 
 extern string g_blast_Result;
 extern long g_total_nt_number;
-extern int g_primer_capacity;
-extern int g_tube_capacity;
-extern long long int g_total_strand_number;
-extern bool g_if_decomposition_on_primer_graph;
-extern bool g_if_baseline;
-extern bool g_if_control_payload_totalsize;
-extern double g_threshold_of_totalsize;
+extern int g_strand_len_1;
+extern int g_strand_len_2;
+extern int g_strand_len_3;
+extern int g_strand_len_4;
+
 
 
 int Parse(string cfgfile);

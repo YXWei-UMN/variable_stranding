@@ -7,8 +7,10 @@
 
 
 string g_blast_Result;
-int g_primer_capacity;
-int g_tube_capacity;
+int g_strand_len_1;
+int g_strand_len_2;
+int g_strand_len_3;
+int g_strand_len_4;
 long g_total_nt_number;
 bool g_if_baseline;
 bool g_if_decomposition_on_primer_graph;
@@ -34,14 +36,20 @@ int Parse(string cfgfile){
         getline(ss, value, ' ');
 
         switch(hash_(key.c_str())){
-            case hash_("primer_capacity"):
-                g_primer_capacity = stoi(value);
+            case hash_("strand_len_1"):
+                g_strand_len_1 = stoi(value);
+                break;
+            case hash_("strand_len_2"):
+                g_strand_len_2 = stoi(value);
+                break;
+            case hash_("strand_len_3"):
+                g_strand_len_3 = stoi(value);
+                break;
+            case hash_("strand_len_4"):
+                g_strand_len_4 = stoi(value);
                 break;
             case hash_("total_strand_number"):
                 g_total_strand_number = stoll(value);
-                break;
-            case hash_("tube_capacity"):
-                g_tube_capacity = stoi(value);
                 break;
             case hash_("total_nt_number"):
                 g_total_nt_number = stol(value);

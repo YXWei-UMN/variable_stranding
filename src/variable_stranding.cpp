@@ -56,25 +56,25 @@ variable_stranding::variable_stranding(string blastfile) {
 void variable_stranding::greedy() {
     int reduced_collision=0;
     int strand_point=0;
-    while (strand_point<g_total_nt_number-220){
-        int cuts[5];
-        cuts[0]=(nts_[strand_point+180]);
-        cuts[1]=(nts_[strand_point+190]);
-        cuts[2]=(nts_[strand_point+200]);
-        cuts[3]=(nts_[strand_point+210]);
-        cuts[4]=(nts_[strand_point+220]);
-        int largest = *max_element(cuts,cuts+5);
+    while (strand_point<g_total_nt_number-g_strand_len_1){
+        int cuts[4];
+        cuts[0]=(nts_[strand_point+g_strand_len_1]);
+        cuts[1]=(nts_[strand_point+g_strand_len_2]);
+        cuts[2]=(nts_[strand_point+g_strand_len_3]);
+        cuts[3]=(nts_[strand_point+g_strand_len_4]);
+        //cuts[4]=(nts_[strand_point+220]);
+        int largest = *max_element(cuts,cuts+4);
         reduced_collision += largest;
         if (largest==cuts[0])
-            strand_point+=180;
+            strand_point+=g_strand_len_1;
         if (largest==cuts[1])
-            strand_point+=190;
+            strand_point+=g_strand_len_2;
         if (largest==cuts[2])
-            strand_point+=200;
+            strand_point+=g_strand_len_3;
         if (largest==cuts[3])
-            strand_point+=210;
-        if (largest==cuts[4])
-            strand_point+=220;
+            strand_point+=g_strand_len_4;
+        /*if (largest==cuts[4])
+            strand_point+=220;*/
     }
     cout<<"reduced_collision"<<reduced_collision<<" "<<(reduced_collision/(collision_num_*1.0))<<endl;
 }
