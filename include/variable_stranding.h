@@ -18,7 +18,7 @@ public:
     vector<int> nts_;
 
     int collision_num_=0;
-
+    long strand_num_=0;
     variable_stranding(string blastfile);
     ~variable_stranding(){}
     void greedy();
