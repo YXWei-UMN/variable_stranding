@@ -18,7 +18,8 @@ int main(int argc, char** argv) {
 
 
     variable_stranding stranding = variable_stranding(g_blast_Result);
-    stranding.greedy();
+    //stranding.greedy();
+    stranding.fixed_length();
     /*if (g_if_baseline)
         partition.baseline();
     else if (g_if_decomposition_on_primer_graph)

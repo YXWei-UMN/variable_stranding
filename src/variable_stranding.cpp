@@ -70,7 +70,18 @@ variable_stranding::variable_stranding(string blastfile) {
     }
 }
 
-
+void variable_stranding::fixed_length() {
+    int reduced_collision=0;
+    int strand_point=0;
+        while(strand_point<g_total_nt_number-g_strand_len_1) {
+            strand_num_++;
+            reduced_collision += nts_[strand_point + g_strand_len_1];
+            strand_point += g_strand_len_1;
+            cout << "strand num:" << strand_num_ << endl;
+            cout << "reduced collision:" << reduced_collision << " " << reduced_collision << " "
+                 << 100 * (reduced_collision / (collision_num_ * 1.0)) << "%" << endl;
+        }
+}
 void variable_stranding::greedy() {
     int reduced_collision=0;
     int strand_point=0;
@@ -92,15 +103,15 @@ void variable_stranding::greedy() {
             strand_point+=g_strand_len_1;
             g_strand_len_1_num++;
         }
-        if (largest==cuts[1]){
+        else if (largest==cuts[1]){
             strand_point+=g_strand_len_2;
             g_strand_len_2_num++;
         }
-        if (largest==cuts[2]){
+        else if (largest==cuts[2]){
             strand_point+=g_strand_len_3;
             g_strand_len_3_num++;
         }
-        if (largest==cuts[3]){
+        else if (largest==cuts[3]){
             strand_point+=g_strand_len_4;
             g_strand_len_4_num++;
         }

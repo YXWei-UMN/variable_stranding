@@ -22,7 +22,7 @@ public:
     variable_stranding(string blastfile);
     ~variable_stranding(){}
     void greedy();
-
+    void fixed_length();
 };
 
 
