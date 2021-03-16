@@ -1,2 +1,6 @@
-blast_Result /home/eason/CLionProjects/parse_BLAST_result/blast_result
-total_nt_number 1813257
+blast_Result ./blast_result
+total_nt_number 711216790
+strand_len_1 200
+strand_len_2 190
+strand_len_3 180
+strand_len_4 170

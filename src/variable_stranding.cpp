@@ -46,6 +46,24 @@ variable_stranding::variable_stranding(string blastfile) {
         long start = stol(start_pos)>stol(end_pos)?stol(end_pos):stol(start_pos);
         long end = stol(start_pos)<stol(end_pos)?stol(end_pos):stol(start_pos);
 
+        int enddd = end;
+        int s = start;
+        // the following code is used to tell whether the cut can reduce the collision
+        // if the collision length is > 19, no matter how to cut, there is always a collision >= 10
+        if (end-start>=19) continue;
+        // if the coolision length is <=10, it's ok to be cut arbitrily
+        // thus we only have to process situation with 20> length >10
+        else if(end-start>10){
+            // the real cut range is (end-10,start+10)
+            // since end-start>10, end-10>start && start+10<end
+            // it's impossible that end-10>start+10, since end-start>20 violate our primer length
+            long tmp = start;
+            start = end-9;
+            end = tmp+9;
+
+        }
+
+        if (end<start) cout<<"error"<<enddd<<" "<<s<<endl;
         for (long i = start; i <= end; ++i) {
             nts_[i-1]++;
         }
