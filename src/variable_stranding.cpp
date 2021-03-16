@@ -77,10 +77,10 @@ void variable_stranding::fixed_length() {
             strand_num_++;
             reduced_collision += nts_[strand_point + g_strand_len_1];
             strand_point += g_strand_len_1;
-            cout << "strand num:" << strand_num_ << endl;
-            cout << "reduced collision:" << reduced_collision << " " << reduced_collision << " "
-                 << 100 * (reduced_collision / (collision_num_ * 1.0)) << "%" << endl;
         }
+    cout << "strand num:" << strand_num_ << endl;
+    cout << "reduced collision:" << reduced_collision << " " << reduced_collision << " "
+         << 100 * (reduced_collision / (collision_num_ * 1.0)) << "%" << endl;
 }
 void variable_stranding::greedy() {
     int reduced_collision=0;
