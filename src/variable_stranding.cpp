@@ -21,7 +21,13 @@ variable_stranding::variable_stranding(string blastfile) {
             continue;
 
         string delimiter = "\t";
-        //delete primer#
+        //record primerID and how many collisions this primer has
+        string primerID =line.substr(0, line.find(delimiter));
+        if (primers_.find(primerID)==primers_.end()){
+            primers_.emplace(primerID,make_pair(false,1));
+        } else{
+            primers_.find(primerID)->second.second++;
+        }
         line.erase(0, line.find(delimiter) + delimiter.length());
         //delete payload#
         line.erase(0, line.find(delimiter) + delimiter.length());
@@ -46,11 +52,12 @@ variable_stranding::variable_stranding(string blastfile) {
         long start = stol(start_pos)>stol(end_pos)?stol(end_pos):stol(start_pos);
         long end = stol(start_pos)<stol(end_pos)?stol(end_pos):stol(start_pos);
 
-        int enddd = end;
-        int s = start;
         // the following code is used to tell whether the cut can reduce the collision
         // if the collision length is > 19, no matter how to cut, there is always a collision >= 10
-        if (end-start>=19) continue;
+        if (end-start>=19) {
+            primers_.find(primerID)->second.first= true;
+            continue;
+        }
         // if the coolision length is <=10, it's ok to be cut arbitrily
         // thus we only have to process situation with 20> length >10
         else if(end-start>10){
@@ -63,11 +70,47 @@ variable_stranding::variable_stranding(string blastfile) {
 
         }
 
-        if (end<start) cout<<"error"<<enddd<<" "<<s<<endl;
-        for (long i = start; i <= end; ++i) {
+
+        //TODO for primers which has collision longer than 20, all its collision shouldn't be in the nts_
+        //TODO for primer which has too many collisions, all its collision shouldn't be in the nts_
+        /*for (long i = start; i <= end; ++i) {
             nts_[i-1]++;
-        }
+        }*/
     }
+}
+
+void variable_stranding::data_analysis() {
+    // check the portion of primers that has collision longer than 20
+    int primer_with_long_collision_num=0;
+    for(auto n:primers_){
+        if (n.second.first) primer_with_long_collision_num++;
+    }
+    cout<<"number of primers that has long collision is: "<<primer_with_long_collision_num<<"    portion:"<<(primer_with_long_collision_num/primers_.size()*1.0)<<endl;
+
+    // check the collision number of each primer
+    vector<int> primer_distribution;
+    for(auto i:primers_){
+        // primers with different collision number
+        int x_axis = i.second.second;
+        /*if (if_count_intra_redundant_collision){
+            x_axis+=i.second->redundant_collision;
+        }*/
+        if(primer_distribution.size()<x_axis+1){
+            for (int j = primer_distribution.size(); j <= x_axis+1; ++j) {
+                primer_distribution.push_back(0);
+            }
+        }
+        primer_distribution[x_axis]++;
+    }
+
+    ofstream myfile;
+    myfile.open ("primer_distribution.csv",ios::out | ios::trunc);
+    for(int i=1; i < primer_distribution.size(); i++){
+        myfile<<i<<","<<primer_distribution[i]<<endl;
+    }
+    myfile.close();
+
+
 }
 
 void variable_stranding::fixed_length() {
