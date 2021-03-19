@@ -81,16 +81,11 @@ variable_stranding::variable_stranding(string blastfile) {
 
 void variable_stranding::data_analysis() {
     // check the portion of primers that has collision longer than 20
-    int primer_with_long_collision_num=0;
-    for(auto n:primers_){
-        if (n.second.first) primer_with_long_collision_num++;
-    }
 
-    cout<<"number of primers that has long collision is: "<<primer_with_long_collision_num<<"    portion:"<<(primer_with_long_collision_num/(primers_.size()*1.0))<<endl;
-
-    // check the collision number of each primer
     vector<int> primer_distribution;
     for(auto i:primers_){
+        if (i.second.first) continue;
+
         // primers with different collision number
         int x_axis = i.second.second;
         /*if (if_count_intra_redundant_collision){
@@ -112,7 +107,7 @@ void variable_stranding::data_analysis() {
         // Cumulative distribution function (cdf) of primer
         if (primer_distribution[i]==0) continue;
 
-        portion_primer+=(primer_distribution[i]/(primers_.size()*1.0));
+        portion_primer+=(primer_distribution[i]/(28000*1.0));
 
         // Cumulative distribution function (cdf) of collision
         portion_collision+=(primer_distribution[i]*i/(collision_num_*1.0));
