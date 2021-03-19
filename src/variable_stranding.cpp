@@ -110,10 +110,13 @@ void variable_stranding::data_analysis() {
     myfile.open ("primer_distribution.csv",ios::out | ios::trunc);
     for(int i=1; i < primer_distribution.size(); i++){
         // Cumulative distribution function (cdf) of primer
+        if (primer_distribution[i]==0) continue;
+
         portion_primer+=(primer_distribution[i]/(primers_.size()*1.0));
 
         // Cumulative distribution function (cdf) of collision
         portion_collision+=(primer_distribution[i]*i/(collision_num_*1.0));
+
 
         // write into file
         myfile<<portion_primer<<","<<portion_collision<<endl;
