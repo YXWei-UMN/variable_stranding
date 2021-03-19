@@ -85,7 +85,7 @@ void variable_stranding::data_analysis() {
     for(auto n:primers_){
         if (n.second.first) primer_with_long_collision_num++;
     }
-    cout<<"number of primers that has long collision is: "<<primer_with_long_collision_num<<"    portion:"<<(primer_with_long_collision_num/primers_.size()*1.0)<<endl;
+    cout<<"number of primers that has long collision is: "<<primer_with_long_collision_num<<"    portion:"<<(primer_with_long_collision_num/(primers_.size()*1.0))<<endl;
 
     // check the collision number of each primer
     vector<int> primer_distribution;
