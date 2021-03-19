@@ -85,6 +85,7 @@ void variable_stranding::data_analysis() {
     for(auto n:primers_){
         if (n.second.first) primer_with_long_collision_num++;
     }
+
     cout<<"number of primers that has long collision is: "<<primer_with_long_collision_num<<"    portion:"<<(primer_with_long_collision_num/(primers_.size()*1.0))<<endl;
 
     // check the collision number of each primer
@@ -104,9 +105,16 @@ void variable_stranding::data_analysis() {
     }
 
     ofstream myfile;
+    double portion_primer=0;
+    double portion_collision=0;
     myfile.open ("primer_distribution.csv",ios::out | ios::trunc);
     for(int i=1; i < primer_distribution.size(); i++){
-        myfile<<i<<","<<primer_distribution[i]<<endl;
+        // # of primers that has i collisions
+        myfile<<primer_distribution[i]<<","<<i<<endl;
+        // Cumulative distribution function (cdf) of primer
+        portion_primer+=(primer_distribution[i]/(primers_.size()*1.0));
+        // Cumulative distribution function (cdf) of collision
+        portion_collision+=(primer_distribution[i]*i/(collision_num_*1.0));
     }
     myfile.close();
 
