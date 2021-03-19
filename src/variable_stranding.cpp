@@ -83,9 +83,8 @@ void variable_stranding::data_analysis() {
     // check the portion of primers that has collision longer than 20
 
     vector<int> primer_distribution;
+    vector<int> primer_distribution_overlong;
     for(auto i:primers_){
-        if (i.second.first) continue;
-
         // primers with different collision number
         int x_axis = i.second.second;
         /*if (if_count_intra_redundant_collision){
@@ -94,9 +93,14 @@ void variable_stranding::data_analysis() {
         if(primer_distribution.size()<x_axis+1){
             for (int j = primer_distribution.size(); j <= x_axis+1; ++j) {
                 primer_distribution.push_back(0);
+                primer_distribution_overlong.push_back(0);
             }
         }
         primer_distribution[x_axis]++;
+
+        if (i.second.first){
+            primer_distribution_overlong[x_axis]++;
+        }
     }
 
     ofstream myfile;
@@ -107,14 +111,15 @@ void variable_stranding::data_analysis() {
         // Cumulative distribution function (cdf) of primer
         if (primer_distribution[i]==0) continue;
 
-        portion_primer+=(primer_distribution[i]/(28000*1.0));
+        portion_primer+=(primer_distribution[i]/(primers_.size()*1.0));
 
         // Cumulative distribution function (cdf) of collision
         portion_collision+=(primer_distribution[i]*i/(collision_num_*1.0));
 
 
         // write into file
-        myfile<<portion_primer<<","<<portion_collision<<endl;
+        myfile<<portion_primer<<","<<portion_collision<<","<<primer_distribution_overlong[i]<<","<<primer_distribution[i]-primer_distribution_overlong<<endl;
+
     }
     myfile.close();
 
