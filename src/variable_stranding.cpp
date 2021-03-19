@@ -118,7 +118,7 @@ void variable_stranding::data_analysis() {
 
 
         // write into file
-        myfile<<portion_primer<<","<<portion_collision<<","<<primer_distribution_overlong[i]<<","<<primer_distribution[i]-primer_distribution_overlong<<endl;
+        myfile<<portion_primer<<","<<portion_collision<<","<<primer_distribution_overlong[i]<<","<<primer_distribution[i]-primer_distribution_overlong[i]<<endl;
 
     }
     myfile.close();
