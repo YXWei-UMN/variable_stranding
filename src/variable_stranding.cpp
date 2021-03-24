@@ -81,6 +81,8 @@ variable_stranding::variable_stranding(string blastfile) {
 
 void variable_stranding::data_analysis() {
     // check the portion of primers that has collision longer than 20
+    cout<<"collided primers:"<<primers_.size()<<endl;
+    cout<<"collision number:"<<collision_num_<<endl;
 
     vector<int> primer_distribution;
     vector<int> primer_distribution_overlong;
