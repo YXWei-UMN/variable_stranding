@@ -28,7 +28,17 @@ variable_stranding::variable_stranding(string blastfile) {
         } else{
             primers_.find(primerID)->second.second++;
         }
+        //delete primer#
         line.erase(0, line.find(delimiter) + delimiter.length());
+        //record payloadID to indicate corresponding collision on nt sequences
+        string payloadID = line.substr(0, line.find(delimiter));
+        long strand = stol(payloadID.substr(7));
+        if (strands_.find(strand)==strands_.end()){
+            strands_.emplace(strand,1);
+        } else{
+            strands_.find(strand)->second++;
+        }
+
         //delete payload#
         line.erase(0, line.find(delimiter) + delimiter.length());
         //delete % identity
@@ -79,7 +89,7 @@ variable_stranding::variable_stranding(string blastfile) {
         //TODO for primer which has too many collisions, all its collision shouldn't be in the nts_
 
 
-        for (long i = start; i <= end; ++i) {
+        for (long i = start+200*strand; i <= end+200*strand; ++i) {
             nts_[i-1]++;
         }
     }
@@ -89,7 +99,7 @@ void variable_stranding::primer_analysis() {
     // check the portion of primers that has collision longer than 20
     cout<<"collided primers:"<<primers_.size()<<endl;
     cout<<"collision number:"<<total_collision_num_<<endl;
-    cout<<"average collision/primer:"<<total_collision_num_/(primers_.size()*1.0)<<endl;
+    cout<<"total collision/total collided primer:"<<total_collision_num_/(primers_.size()*1.0)<<endl;
 
     vector<int> primer_distribution;
     vector<int> primer_distribution_overlong;
@@ -143,52 +153,38 @@ void variable_stranding::strand_analysis() {
     vector<long int> collision_length_distribution(22,0);
     vector<long int> collision_coverage_distribution(200,0);
 
-    int nt=0;
     int strand=0;
-    int collided_strand=0;
     long int total_length=0;
-    long int total_collision=0;
     int total_coverage=0;
     while (strand < nts_.size()/200){
-
-        int collision_number=0;
-        int total_collision_length_inside_strand=0;
-        int collision_coverage=0;
-        for (int i = 0; i < 200; ++i) {
-            //every 200 nt is a strand, current nt is nt+i
-            // length
-            total_collision_length_inside_strand+=nts_[nt+i];
-            // coverage
-            if (nts_[nt+1]!=0) collision_coverage++;
-            // number = the increase on every element in nt array
-            if (nt==0 && i==0) continue;
-            if(nts_[nt+i]>nts_[nt+i-1]) collision_number+=nts_[nt+i]-nts_[nt+i-1];
-        }
-        total_length+= total_collision_length_inside_strand;
-        total_collision+=collision_number;
-        total_coverage+=collision_coverage;
-
-        int average_length = 0;
-        if (collision_number!=0) {
-            collided_strand++;
-            average_length = total_collision_length_inside_strand/collision_number;
-        }
-
-
-        // it's possible average length is 0 (free strand)
-        collision_length_distribution[average_length]++;
-        collision_coverage_distribution[collision_coverage]++;
-        // padding number_distribution vector
-        if(collision_number_distribution.size()<collision_number+1){
-            for (int j = collision_number_distribution.size(); j <= collision_number+1; ++j) {
-                collision_number_distribution.push_back(0);
+        if (strands_.find(strand)!=strands_.end()){
+            int strand_total_collision_length=0;
+            int strand_collision_coverage=0;
+            for (int i = 0; i < 200; ++i) {
+                //every 200 nt is a strand, current nt is nt+i
+                // length
+                strand_total_collision_length+=nts_[200*strand+i];
+                // coverage
+                if (nts_[200*strand+i]!=0) strand_collision_coverage++;
             }
-        }
-        collision_number_distribution[collision_number]++;
+            total_length += strand_total_collision_length;
+            total_coverage += strand_collision_coverage;
 
-        // adjust strand and nt for next iteration
-        strand++; // finish one strand
-        nt+=200; // finish 200 nts
+            int average_length = strand_total_collision_length/strands_.find(strand)->second;
+
+            // it's possible average length is 0 (free strand)
+            collision_length_distribution[average_length]++;
+            collision_coverage_distribution[strand_collision_coverage]++;
+            // padding number_distribution vector
+            if(collision_number_distribution.size()<strands_.find(strand)->second+1){
+                for (int j = collision_number_distribution.size(); j <= strands_.find(strand)->second+1; ++j) {
+                    collision_number_distribution.push_back(0);
+                }
+            }
+            collision_number_distribution[strands_.find(strand)->second]++;
+        }
+        // adjust strand for next iteration
+        strand++;
     }
 
     ofstream myfile;
@@ -213,13 +209,14 @@ void variable_stranding::strand_analysis() {
         myfile<<i<<","<<collision_coverage_distribution[i]<<endl;
     }
     myfile.close();
+    cout<<"total strand collision:"<<strands_.size()<<"  portion:"<<strands_.size()/(nts_.size()/200*1.0)<<endl;
+    cout<<"total collision/total collided strand:"<<total_collision_num_/(strands_.size()*1.0)<<endl;
 
-    cout<<"collision num in strand_analysis function:"<<total_collision<<" in real data:"<<total_collision_num_<<endl;
-
-    cout<<"overall average collision length (total length/collision number):"<<total_length/(total_collision*1.0)<<endl;
-    cout<<"overall average collision coverage (total coverage/total collided strand):"<<(total_coverage)/(collided_strand*1.0)<<endl;
+    cout<<"overall average collision length (total length/collision number):"<<total_length/(total_collision_num_*1.0)<<endl;
+    cout<<"overall average collision coverage (total coverage/total collided strand):"<<(total_coverage)/(strands_.size()*1.0)<<endl;
 }
 
+/*
 void variable_stranding::fixed_length() {
     int reduced_collision=0;
     int strand_point=0;
@@ -265,8 +262,10 @@ void variable_stranding::greedy() {
             strand_point+=g_strand_len_4;
             g_strand_len_4_num++;
         }
-        /*if (largest==cuts[4])
-            strand_point+=220;*/
+        */
+/*if (largest==cuts[4])
+            strand_point+=220;*//*
+
     }
     cout<<"strand num:"<<strand_num_<<endl;
     cout<<"len-"<<g_strand_len_1<<":"<<g_strand_len_1_num<<endl;
@@ -274,4 +273,4 @@ void variable_stranding::greedy() {
     cout<<"len-"<<g_strand_len_3<<":"<<g_strand_len_3_num<<endl;
     cout<<"len-"<<g_strand_len_4<<":"<<g_strand_len_4_num<<endl;
     cout<<"reduced collision:"<<reduced_collision<<" "<<100*(reduced_collision/(total_collision_num_*1.0))<<"%"<<endl;
-}
+}*/
