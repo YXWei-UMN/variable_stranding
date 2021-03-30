@@ -12,13 +12,32 @@
 
 using namespace std;
 
+
+class strand{
+public:
+    vector<pair<long,long>> collisions_;
+};
+
+class primer{
+public:
+    vector<pair<long,long>> collisions_;
+};
+
+/*struct collision_CmpByPtr {
+    bool operator()(const collision*& lhs, const collision*& rhs) {
+        return lhs->start < rhs->start;
+    }
+};*/
+
 class variable_stranding {
 public:
     // how many collisions have go across the ith nt
     vector<int> nts_;
     // 1st: primer ID  2nd: <if has collision longer than 20, # of collisions this primer has>
-    unordered_map<string,pair<bool,int>> primers_;
-    unordered_map<long,int> strands_;
+    unordered_map<string,primer> primers_;
+    // 1st: strand ID  2nd: collision number
+    unordered_map<long,strand> strands_;
+    vector<pair<long,long>> collisions_;
 
     int total_collision_num_=0;
 

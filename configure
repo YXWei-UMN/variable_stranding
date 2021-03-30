@@ -1,5 +1,5 @@
-blast_Result ./blast_result
-total_nt_number 711216790
+blast_Result ./blast_result_evalue50
+total_nt_number 658613000
 strand_len_1 200
 strand_len_2 190
 strand_len_3 180

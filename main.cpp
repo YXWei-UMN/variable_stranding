@@ -25,6 +25,6 @@ int main(int argc, char** argv) {
     //stranding.fixed_length();
 
     stranding.primer_analysis();
-    stranding.strand_analysis();
+//    stranding.strand_analysis();
     return 0;
 }

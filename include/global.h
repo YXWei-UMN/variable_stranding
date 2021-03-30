@@ -29,6 +29,7 @@
 #include <set>
 #include <unordered_set>
 #include <queue>
+#include <tuple>
 using namespace std;
 
 #define PRIMER_CAPACITY 736
