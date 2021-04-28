@@ -1,5 +1,23 @@
-blast_Result ./blast_result_evalue50
-total_nt_number 658613000
+#blast_Result ./blast_evalue50_swap_5_200strand
+#blast_Result ./blast_test_C_200strand
+#blast_Result ./blast_random_C_200strand
+#total_nt_number 658613000
+
+blast_Result ./blast_result_evalue50_200strand_1Mcollision
+#blast_Result ./blast_result_evalue50_C_no_strand
+#blast_Result ./blast_result_evalue50_T_nostrand_1Mcollision
+#blast_Result ./blast_result_evalue20_no_strand
+total_nt_number 658613166
+
+
+
+
+
+
+# input strand len: 4MB
+strand_len 200
+
+# cut strand from whole data stream
 strand_len_1 200
 strand_len_2 190
 strand_len_3 180

@@ -2,6 +2,8 @@
 #include "include/global.h"
 using namespace std;
 
+
+
 int main(int argc, char** argv) {
     if (argc != 2) {
         cerr<<"argc must be 2"<<endl;
@@ -18,13 +20,17 @@ int main(int argc, char** argv) {
 
 
     variable_stranding stranding = variable_stranding(g_blast_Result);
-    // naive greedy algorithm
-    //stranding.greedy();
+
+    // nt sequences has problem!!!!!!!!!!!!!!!!!!!!!!!
+    /*//stranding.greedy();
 
     // fixed 200 nt
-    //stranding.fixed_length();
+    //stranding.fixed_length();*/
 
-    stranding.primer_analysis();
-//    stranding.strand_analysis();
+    stranding.compare_nostrand_with_fixed200();
+
+    //stranding.collision_analysis();
+    //stranding.primer_analysis();
+    //stranding.strand_analysis();
     return 0;
 }

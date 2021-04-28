@@ -47,6 +47,11 @@ public:
     void fixed_length();
     void primer_analysis();
     void strand_analysis();
+    void collision_analysis();
+
+
+    void compare_nostrand_with_fixed200();
+
 };
 
 

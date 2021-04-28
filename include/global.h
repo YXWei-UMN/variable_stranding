@@ -30,6 +30,7 @@
 #include <unordered_set>
 #include <queue>
 #include <tuple>
+#include <math.h>
 using namespace std;
 
 #define PRIMER_CAPACITY 736
@@ -40,7 +41,7 @@ extern int g_strand_len_1;
 extern int g_strand_len_2;
 extern int g_strand_len_3;
 extern int g_strand_len_4;
-
+extern int g_strand_len;
 
 
 int Parse(string cfgfile);

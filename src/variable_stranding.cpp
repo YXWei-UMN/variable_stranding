@@ -8,7 +8,7 @@
 
 variable_stranding::variable_stranding(string blastfile) {
 
-    nts_.resize(g_total_nt_number,0);
+    //nts_.resize(g_total_nt_number,0);
 
 
     fstream result_file(blastfile,ios::in);
@@ -51,29 +51,30 @@ variable_stranding::variable_stranding(string blastfile) {
         total_collision_num_++;
         long start = stol(start_pos)>stol(end_pos)?stol(end_pos):stol(start_pos);
         long end = stol(start_pos)<stol(end_pos)?stol(end_pos):stol(start_pos);
-
+        start+=g_strand_len_1*strand_ID;
+        end+=g_strand_len_1*strand_ID;
         // code for detect overlong collision but not screen out
         /*if (end-start>=11) {
             primers_.find(primerID)->second.first= true;
         }*/
         // initialize collision vector to check the distance between adjacent collisions
-        collisions_.emplace_back(make_pair(start+200*strand_ID,end+200*strand_ID));
+        collisions_.emplace_back(make_pair(start,end));
         // initialize corresponding primer with its collisions
         if (primers_.find(primerID)==primers_.end()){
             primer p;
-            p.collisions_.emplace_back(make_pair(start+200*strand_ID,end+200*strand_ID));
+            p.collisions_.emplace_back(make_pair(start,end));
             primers_.emplace(primerID,p);
         } else{
-            primers_.find(primerID)->second.collisions_.emplace_back(make_pair(start+200*strand_ID,end+200*strand_ID));
+            primers_.find(primerID)->second.collisions_.emplace_back(make_pair(start,end));
         }
 
         // initialize corresponding strand with its collisions
         if (strands_.find(strand_ID)==strands_.end()){
             strand tmp_strand;
-            tmp_strand.collisions_.push_back(make_pair(start+200*strand_ID,end+200*strand_ID));
+            tmp_strand.collisions_.push_back(make_pair(start,end));
             strands_.emplace(strand_ID,tmp_strand);
         } else{
-            strands_.find(strand_ID)->second.collisions_.push_back(make_pair(start+200*strand_ID,end+200*strand_ID));
+            strands_.find(strand_ID)->second.collisions_.push_back(make_pair(start,end));
         }
 
         /* code for overlong screen out, not used currently
@@ -96,12 +97,275 @@ variable_stranding::variable_stranding(string blastfile) {
         }*/
 
 
-        for (long i = start+200*strand_ID; i <= end+200*strand_ID; ++i) {
+       /* for (long i = start; i <= end; ++i) {
             nts_[i-1]++;
             // i-1 because blast report nt position from 0?
+        }*/
+    }
+
+}
+
+
+void variable_stranding::compare_nostrand_with_fixed200() {
+    cout<<primers_.size()<<endl;
+
+    unordered_set<int> original_strand;
+    unordered_set<int> double_strand;
+    unordered_set<int> triple_strand;
+    unordered_set<int> overall_strand;
+    unordered_set<string> primer_upperbound;
+
+    for(auto n:collisions_){
+        if(n.first/200 != n.second/200) continue;
+        int id = n.first/200;
+        original_strand.emplace(id);
+    }
+
+    //fstream result_file("./blast_test_map_A2T_evalue50_200strand",ios::in);
+    fstream result_file("./blast_random_C_200strand",ios::in);
+    //fstream result_file("./blast_map_A2T_evalue50_200strand",ios::in);
+    //fstream result_file("./blast_swap_1_200strand",ios::in);
+    if (result_file.fail()) {
+        cerr << "fail to open blastfile:" << "blast_result_evalue50_no_strand" << "!\n";
+    }
+    string line;
+    while(getline(result_file,line)) {
+        if (line.size() <= 1 || line[0] == '#')
+            continue;
+
+        string delimiter = "\t";
+        //record primerID and how many collisions this primer has
+        string primerID = line.substr(0, line.find(delimiter));
+        //delete primer#
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //record payloadID
+        string payloadID = line.substr(0, line.find(delimiter));
+        long strand_ID = stol(payloadID.substr(7));
+        //delete payload#
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete % identity
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete alignment length
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete mismatches
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete gap opens
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete primer start
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete primer end
+        line.erase(0, line.find(delimiter) + delimiter.length());
+
+        string start_pos, end_pos;
+        start_pos = line.substr(0, line.find(delimiter));
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        end_pos = line.substr(0, line.find(delimiter));
+        long start = stol(start_pos) > stol(end_pos) ? stol(end_pos) : stol(start_pos);
+        long end = stol(start_pos) < stol(end_pos) ? stol(end_pos) : stol(start_pos);
+
+        start += strand_ID * g_strand_len;
+        end += strand_ID * g_strand_len;
+
+        // even if 10k long strand, still divide 200 to see whether crossed by 200-fixed cutoff point
+        int end_strand = end / 200;
+        int start_strand = start / 200;
+        if (end_strand != start_strand) continue;
+        else {
+            int id = start_strand;
+            if (original_strand.find(id)!=original_strand.end()) double_strand.emplace(id);
         }
     }
+    result_file.close();
+
+
+    //result_file.open("./blast_test_map_C2G_evalue50_200strand",ios::in);
+    result_file.open("./blast_random_2_C_200strand",ios::in);
+    //result_file.open("./blast_map_C2G_evalue50_200strand",ios::in);
+    //result_file.open("./blast_swap_3_200strand",ios::in);
+    if (result_file.fail()) {
+        cerr << "fail to open blastfile:" << "blast_result_evalue50_no_strand" << "!\n";
+    }
+    while(getline(result_file,line)) {
+        if (line.size() <= 1 || line[0] == '#')
+            continue;
+
+        string delimiter = "\t";
+        //record primerID and how many collisions this primer has
+        string primerID = line.substr(0, line.find(delimiter));
+        //delete primer#
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //record payloadID
+        string payloadID = line.substr(0, line.find(delimiter));
+        long strand_ID = stol(payloadID.substr(7));
+        //delete payload#
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete % identity
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete alignment length
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete mismatches
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete gap opens
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete primer start
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete primer end
+        line.erase(0, line.find(delimiter) + delimiter.length());
+
+        string start_pos, end_pos;
+        start_pos = line.substr(0, line.find(delimiter));
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        end_pos = line.substr(0, line.find(delimiter));
+        long start = stol(start_pos) > stol(end_pos) ? stol(end_pos) : stol(start_pos);
+        long end = stol(start_pos) < stol(end_pos) ? stol(end_pos) : stol(start_pos);
+
+        start += strand_ID * g_strand_len;
+        end += strand_ID * g_strand_len;
+
+        // even if 10k long strand, still divide 200 to see whether crossed by 200-fixed cutoff point
+        int end_strand = end / 200;
+        int start_strand = start / 200;
+        if (end_strand != start_strand) continue;
+        else {
+            int id = start_strand;
+            if (double_strand.find(id)!=double_strand.end()) triple_strand.emplace(id);
+        }
+    }
+    result_file.close();
+
+    //result_file.open("./blast_test_map_C2G_A2T_evalue50_200strand",ios::in);
+    result_file.open("./blast_random_3_C_200strand",ios::in);
+    //result_file.open("./blast_map_C2G_A2T_evalue50_200strand",ios::in);
+    //result_file.open("./blast_swap_5_200strand",ios::in);
+
+    if (result_file.fail()) {
+        cerr << "fail to open blastfile:" << "blast_result_evalue50_no_strand" << "!\n";
+    }
+    while(getline(result_file,line)) {
+        if (line.size() <= 1 || line[0] == '#')
+            continue;
+
+        string delimiter = "\t";
+        //record primerID and how many collisions this primer has
+        string primerID = line.substr(0, line.find(delimiter));
+        //delete primer#
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //record payloadID
+        string payloadID = line.substr(0, line.find(delimiter));
+        long strand_ID = stol(payloadID.substr(7));
+        //delete payload#
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete % identity
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete alignment length
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete mismatches
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete gap opens
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete primer start
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        //delete primer end
+        line.erase(0, line.find(delimiter) + delimiter.length());
+
+        string start_pos, end_pos;
+        start_pos = line.substr(0, line.find(delimiter));
+        line.erase(0, line.find(delimiter) + delimiter.length());
+        end_pos = line.substr(0, line.find(delimiter));
+        long start = stol(start_pos) > stol(end_pos) ? stol(end_pos) : stol(start_pos);
+        long end = stol(start_pos) < stol(end_pos) ? stol(end_pos) : stol(start_pos);
+
+        start += strand_ID * g_strand_len;
+        end += strand_ID * g_strand_len;
+
+        // even if 10k long strand, still divide 200 to see whether crossed by 200-fixed cutoff point
+        int end_strand = end / 200;
+        int start_strand = start / 200;
+        if (end_strand != start_strand) continue;
+        else {
+            int id = start_strand;
+            if (triple_strand.find(id)!=triple_strand.end()) {
+                overall_strand.emplace(id);
+                primer_upperbound.emplace(primerID);
+            }
+        }
+    }
+    result_file.close();
+
+    cout<<"original strand num: "<<original_strand.size()<<endl;
+    cout<<"double strand num: "<<double_strand.size()<<endl;
+    cout<<"triple strand num: "<<triple_strand.size()<<endl;
+    cout<<"overall strand num: "<<overall_strand.size()<<"  "<<overall_strand.size()/(3293065*1.0)<<endl;
+    cout<<"primer upperbound: "<<primer_upperbound.size()<<endl;
 }
+
+
+void variable_stranding::collision_analysis() {
+    ofstream myfile;
+    //collision length distribution
+    /*vector<int> collsion_length_distribution(22,0);
+    for(auto n:collisions_){
+        int len = n.second-n.first;
+        collsion_length_distribution[len]++;
+    }
+
+
+    myfile.open ("collsion_length_distribution.csv",ios::out | ios::trunc);
+    for(int i=1; i < collsion_length_distribution.size(); i++){
+        // write into file
+        myfile<<i<<","<<collsion_length_distribution[i]<<endl;
+    }
+    myfile.close();*/
+
+
+
+
+    // distance distribution
+    /*sort(collisions_.begin(),collisions_.end());
+    unordered_map<int,int> collision_distance_distribution;
+
+    // calculate distance of collisions inside one primer if it has more than one collision
+    int next_start,last_end;
+    auto n = collisions_.begin();
+
+    int close=0;
+    int far=0;
+    while(n!=collisions_.end()){
+        last_end=n->second;
+        n++;
+        next_start=n->first;
+        int dis = next_start-last_end;
+        dis=dis/100*100;
+
+        if (collision_distance_distribution.find(dis)!=collision_distance_distribution.end()){
+            collision_distance_distribution.find(dis)->second++;
+        } else{
+            collision_distance_distribution.emplace(dis,1);
+        }
+    }
+
+    myfile.open ("collision_distance.csv",ios::out | ios::trunc);
+    for(auto n:collision_distance_distribution){
+        // write into file
+        myfile<<n.first<<","<<n.second<<endl;
+    }
+    myfile.close();*/
+
+
+    // collision distribution on nt sequences
+    /*myfile.open ("collision_distribution.csv",ios::out | ios::trunc);
+    for(int i=0; i<nts_.size()/1024000; i++){
+        // every 200nt print collision distribution
+        int collision_nt=0;
+        for (int j = 0; j < 1024000; ++j) {
+            if (nts_[j+i*1024000]>0) collision_nt++;
+        }
+        myfile<<i<<"    "<<collision_nt<<endl;
+    }
+    myfile.close();*/
+
+}
+
 
 void variable_stranding::primer_analysis() {
     // check the portion of primers that has collision longer than 20
@@ -183,6 +447,7 @@ void variable_stranding::primer_analysis() {
         myfile<<n<<endl;
     }
     myfile.close();
+
 
     //TODO print the distance of all adjacent collision with collisions_ vector
 }
@@ -319,53 +584,54 @@ void variable_stranding::strand_analysis() {
     cout<<"overall average collision coverage (total coverage/total collided strand):"<<(total_coverage)/(strands_.size()*1.0)<<endl;
 }
 
-/*
+
 void variable_stranding::fixed_length() {
     int reduced_collision=0;
-    int strand_point=0;
+    int strand_point=g_strand_len_1;
         while(strand_point<g_total_nt_number-g_strand_len_1) {
-            strand_num_++;
-            reduced_collision += nts_[strand_point + g_strand_len_1];
+            reduced_collision += nts_[strand_point];
             strand_point += g_strand_len_1;
         }
-    cout << "strand num:" << strand_num_ << endl;
-    cout << "reduced collision:" << reduced_collision << " " << reduced_collision << " "
+
+    cout << "reduced collision:" << reduced_collision << " total_collision" << total_collision_num_ << " "
          << 100 * (reduced_collision / (total_collision_num_ * 1.0)) << "%" << endl;
 }
+
+/*
 void variable_stranding::greedy() {
-    int reduced_collision=0;
-    int strand_point=0;
-    long g_strand_len_1_num=0;
-    long g_strand_len_2_num=0;
-    long g_strand_len_3_num=0;
-    long g_strand_len_4_num=0;
-    while (strand_point<g_total_nt_number-g_strand_len_1){
-        strand_num_++;
-        int cuts[4];
-        cuts[0]=(nts_[strand_point+g_strand_len_1]);
-        cuts[1]=(nts_[strand_point+g_strand_len_2]);
-        cuts[2]=(nts_[strand_point+g_strand_len_3]);
-        cuts[3]=(nts_[strand_point+g_strand_len_4]);
-        //cuts[4]=(nts_[strand_point+220]);
-        int largest = *max_element(cuts,cuts+4);
-        reduced_collision += largest;
-        if (largest==cuts[0]){
-            strand_point+=g_strand_len_1;
-            g_strand_len_1_num++;
-        }
-        else if (largest==cuts[1]){
-            strand_point+=g_strand_len_2;
-            g_strand_len_2_num++;
-        }
-        else if (largest==cuts[2]){
-            strand_point+=g_strand_len_3;
-            g_strand_len_3_num++;
-        }
-        else if (largest==cuts[3]){
-            strand_point+=g_strand_len_4;
-            g_strand_len_4_num++;
-        }
-        */
+   int reduced_collision=0;
+   int strand_point=0;
+   long g_strand_len_1_num=0;
+   long g_strand_len_2_num=0;
+   long g_strand_len_3_num=0;
+   long g_strand_len_4_num=0;
+   while (strand_point<g_total_nt_number-g_strand_len_1){
+       strand_num_++;
+       int cuts[4];
+       cuts[0]=(nts_[strand_point+g_strand_len_1]);
+       cuts[1]=(nts_[strand_point+g_strand_len_2]);
+       cuts[2]=(nts_[strand_point+g_strand_len_3]);
+       cuts[3]=(nts_[strand_point+g_strand_len_4]);
+       //cuts[4]=(nts_[strand_point+220]);
+       int largest = *max_element(cuts,cuts+4);
+       reduced_collision += largest;
+       if (largest==cuts[0]){
+           strand_point+=g_strand_len_1;
+           g_strand_len_1_num++;
+       }
+       else if (largest==cuts[1]){
+           strand_point+=g_strand_len_2;
+           g_strand_len_2_num++;
+       }
+       else if (largest==cuts[2]){
+           strand_point+=g_strand_len_3;
+           g_strand_len_3_num++;
+       }
+       else if (largest==cuts[3]){
+           strand_point+=g_strand_len_4;
+           g_strand_len_4_num++;
+       }
+       */
 /*if (largest==cuts[4])
             strand_point+=220;*//*
 

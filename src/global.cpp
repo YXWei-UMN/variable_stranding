@@ -7,6 +7,7 @@
 
 
 string g_blast_Result;
+int g_strand_len;
 int g_strand_len_1;
 int g_strand_len_2;
 int g_strand_len_3;
@@ -36,6 +37,9 @@ int Parse(string cfgfile){
         getline(ss, value, ' ');
 
         switch(hash_(key.c_str())){
+            case hash_("strand_len"):
+                g_strand_len = stoi(value);
+                break;
             case hash_("strand_len_1"):
                 g_strand_len_1 = stoi(value);
                 break;
