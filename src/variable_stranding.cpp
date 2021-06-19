@@ -110,47 +110,44 @@ void variable_stranding::collisions_among_chunks() {
     cout<<"chunk number: "<<chunks_.size()<<endl;
 
     // collision number of each chunks
-    vector<int> collision_distribution_among_chunks(28002,0);
+    /*vector<int> collision_distribution_among_chunks(28002,0);
     for(auto n:chunks_){
         collision_distribution_among_chunks[n.second.collided_primer_.size()]++;
-    }
+    }*/
 
 
     ofstream myfile;
-    myfile.open ("collision distribution among chunks.csv",ios::out | ios::trunc);
+    /*myfile.open ("collision distribution among chunks.csv",ios::out | ios::trunc);
     for(int i=0; i < collision_distribution_among_chunks.size(); i++){
         // write into file
         myfile<<i<<","<<collision_distribution_among_chunks[i]<<endl;
     }
-    myfile.close();
+    myfile.close();*/
 
 
 
 
     // for each chunk/file, go over others to see whether they have common collision
+    vector<int> common_collision_chunk_degree(10000,0);
     int i=0;
     for(auto n:chunks_){
-        cout<<i++<<endl;
         set<int> common_files;
+        int s=0;
         for(auto m:n.second.collided_primer_){
             auto p = primers_.find(m);
             for(auto f:p->second.collided_file_){
+                s++;
                 common_files.emplace(f);
             }
         }
         n.second.degree=common_files.size();
-    }
-
-    vector<int> common_collision_chunk_degree(10000,0);
-    for(auto n:chunks_){
-        if (n.second.degree>common_collision_chunk_degree.size()-1){
-            for (int i = 0; i < n.second.degree-common_collision_chunk_degree.size()+1; ++i) {
+        if (n.second.degree>1+common_collision_chunk_degree.size()){
+            for (int j = n.second.degree; j > 1+common_collision_chunk_degree.size() ; --j) {
                 common_collision_chunk_degree.push_back(0);
             }
         }
         common_collision_chunk_degree[n.second.degree]++;
     }
-
 
     myfile.open ("common_collision_chunk_degree.csv",ios::out | ios::trunc);
     for(int i=0; i < common_collision_chunk_degree.size(); i++){
