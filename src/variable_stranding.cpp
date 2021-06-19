@@ -63,7 +63,7 @@ variable_stranding::variable_stranding(string blastfile) {
         // initialize collision vector to check the distance between adjacent collisions
         //collisions_.emplace_back(make_pair(start,end));
         // initialize corresponding primer with its collisions
-        /*if (primers_.find(primerID)==primers_.end()){
+        if (primers_.find(primerID)==primers_.end()){
             primer p;
             p.collisions_.emplace_back(make_pair(start,end));
             primers_.emplace(primerID,p);
@@ -72,7 +72,7 @@ variable_stranding::variable_stranding(string blastfile) {
         }
 
         // initialize corresponding strand with its collisions
-        if (strands_.find(strand_ID)==strands_.end()){
+        /*if (strands_.find(strand_ID)==strands_.end()){
             strand tmp_strand;
             tmp_strand.collisions_.push_back(make_pair(start,end));
             strands_.emplace(strand_ID,tmp_strand);
@@ -80,13 +80,13 @@ variable_stranding::variable_stranding(string blastfile) {
             strands_.find(strand_ID)->second.collisions_.push_back(make_pair(start,end));
         }*/
 
-        /*if (primers_.find(primerID)==primers_.end()){
+        if (primers_.find(primerID)==primers_.end()){
             primer p;
             p.collided_file_.emplace_back(strand_ID);
             primers_.emplace(primerID,p);
         } else{
             primers_.find(primerID)->second.collided_file_.emplace_back(strand_ID);
-        }*/
+        }
 
         // one chunk 4KB  one strand 40 bytes. One chunk = 100 strand
         if (chunks_.find(strand_ID)==chunks_.end()){
@@ -110,19 +110,19 @@ void variable_stranding::collisions_among_chunks() {
     cout<<"chunk number: "<<chunks_.size()<<endl;
 
     // collision number of each chunks
-    /*vector<int> collision_distribution_among_chunks(28002,0);
+    vector<int> collision_distribution_among_chunks(28002,0);
     for(auto n:chunks_){
         collision_distribution_among_chunks[n.second.collided_primer_.size()]++;
     }
-*/
+
 
     ofstream myfile;
-    /*myfile.open ("collision distribution among chunks.csv",ios::out | ios::trunc);
+    myfile.open ("collision distribution among chunks.csv",ios::out | ios::trunc);
     for(int i=0; i < collision_distribution_among_chunks.size(); i++){
         // write into file
         myfile<<i<<","<<collision_distribution_among_chunks[i]<<endl;
     }
-    myfile.close();*/
+    myfile.close();
 
 
 
@@ -131,23 +131,14 @@ void variable_stranding::collisions_among_chunks() {
     int i=0;
     for(auto n:chunks_){
         cout<<i++<<endl;
-        for(auto m:chunks_){
-            if (n.first==m.first) continue;
-
-            bool common = false;
-            for (auto k:n.second.collided_primer_){
-                if (common) break;
-
-                for (auto l:m.second.collided_primer_) {
-                    if (common) break;
-
-                    if (k==l) {
-                        n.second.degree++;
-                        common= true;
-                    }
-                }
+        set<int> common_files;
+        for(auto m:n.second.collided_primer_){
+            auto p = primers_.find(m);
+            for(auto f:p->second.collided_file_){
+                common_files.emplace(f);
             }
         }
+        n.second.degree=common_files.size();
     }
 
     vector<int> common_collision_chunk_degree(10000,0);
