@@ -21,8 +21,15 @@ public:
 class primer{
 public:
     vector<pair<long,long>> collisions_;
+    vector<int> collided_file_;
 };
 
+class chunk{
+public:
+    int degree=0;
+    vector<string> collided_primer_;
+    ~chunk(){};
+};
 /*struct collision_CmpByPtr {
     bool operator()(const collision*& lhs, const collision*& rhs) {
         return lhs->start < rhs->start;
@@ -38,6 +45,8 @@ public:
     // 1st: strand ID  2nd: collision number
     unordered_map<long,strand> strands_;
     vector<pair<long,long>> collisions_;
+    unordered_map<long,chunk> chunks_;
+
 
     int total_collision_num_=0;
 
@@ -48,7 +57,8 @@ public:
     void primer_analysis();
     void strand_analysis();
     void collision_analysis();
-
+    void collisions_among_primer();
+    void collisions_among_chunks();
 
     void compare_nostrand_with_fixed200();
 

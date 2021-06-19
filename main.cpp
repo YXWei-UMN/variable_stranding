@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
     // fixed 200 nt
     //stranding.fixed_length();*/
 
-    stranding.compare_nostrand_with_fixed200();
-
+    //stranding.compare_nostrand_with_fixed200();
+    stranding.collisions_among_chunks();
     //stranding.collision_analysis();
     //stranding.primer_analysis();
     //stranding.strand_analysis();

@@ -29,6 +29,8 @@ variable_stranding::variable_stranding(string blastfile) {
         string payloadID = line.substr(0, line.find(delimiter));
         long strand_ID = stol(payloadID.substr(7));
 
+        total_collision_num_++;
+
         //delete payload#
         line.erase(0, line.find(delimiter) + delimiter.length());
         //delete % identity
@@ -48,7 +50,8 @@ variable_stranding::variable_stranding(string blastfile) {
         start_pos = line.substr(0, line.find(delimiter));
         line.erase(0, line.find(delimiter) + delimiter.length());
         end_pos = line.substr(0, line.find(delimiter));
-        total_collision_num_++;
+
+
         long start = stol(start_pos)>stol(end_pos)?stol(end_pos):stol(start_pos);
         long end = stol(start_pos)<stol(end_pos)?stol(end_pos):stol(start_pos);
         start+=g_strand_len_1*strand_ID;
@@ -58,9 +61,9 @@ variable_stranding::variable_stranding(string blastfile) {
             primers_.find(primerID)->second.first= true;
         }*/
         // initialize collision vector to check the distance between adjacent collisions
-        collisions_.emplace_back(make_pair(start,end));
+        //collisions_.emplace_back(make_pair(start,end));
         // initialize corresponding primer with its collisions
-        if (primers_.find(primerID)==primers_.end()){
+        /*if (primers_.find(primerID)==primers_.end()){
             primer p;
             p.collisions_.emplace_back(make_pair(start,end));
             primers_.emplace(primerID,p);
@@ -75,26 +78,24 @@ variable_stranding::variable_stranding(string blastfile) {
             strands_.emplace(strand_ID,tmp_strand);
         } else{
             strands_.find(strand_ID)->second.collisions_.push_back(make_pair(start,end));
-        }
-
-        /* code for overlong screen out, not used currently
-         * // the following code is used to tell whether the cut can reduce the collision
-        // if the collision length is > 19, no matter how to cut, there is always a collision >= 10
-        if (end-start>=19) {
-            primers_.find(primerID)->second.first= true;
-            continue;
-        }
-        // if the coolision length is <=10, it's ok to be cut arbitrily
-        // thus we only have to process situation with 20> length >10
-        else if(end-start>10){
-            // the real cut range is (end-10,start+10)
-            // since end-start>10, end-10>start && start+10<end
-            // it's impossible that end-10>start+10, since end-start>20 violate our primer length
-            long tmp = start;
-            start = end-9;
-            end = tmp+9;
-
         }*/
+
+        /*if (primers_.find(primerID)==primers_.end()){
+            primer p;
+            p.collided_file_.emplace_back(strand_ID);
+            primers_.emplace(primerID,p);
+        } else{
+            primers_.find(primerID)->second.collided_file_.emplace_back(strand_ID);
+        }*/
+
+        // one chunk 4KB  one strand 40 bytes. One chunk = 100 strand
+        if (chunks_.find(strand_ID)==chunks_.end()){
+            chunk f;
+            f.collided_primer_.emplace_back(primerID);
+            chunks_.emplace(strand_ID,f);
+        } else{
+            chunks_.find(strand_ID)->second.collided_primer_.emplace_back(primerID);
+        }
 
 
        /* for (long i = start; i <= end; ++i) {
@@ -104,6 +105,75 @@ variable_stranding::variable_stranding(string blastfile) {
     }
 
 }
+
+void variable_stranding::collisions_among_chunks() {
+    cout<<"chunk number: "<<chunks_.size()<<endl;
+
+    // collision number of each chunks
+    /*vector<int> collision_distribution_among_chunks(28002,0);
+    for(auto n:chunks_){
+        collision_distribution_among_chunks[n.second.collided_primer_.size()]++;
+    }
+*/
+
+    ofstream myfile;
+    /*myfile.open ("collision distribution among chunks.csv",ios::out | ios::trunc);
+    for(int i=0; i < collision_distribution_among_chunks.size(); i++){
+        // write into file
+        myfile<<i<<","<<collision_distribution_among_chunks[i]<<endl;
+    }
+    myfile.close();*/
+
+
+
+
+    // for each chunk/file, go over others to see whether they have common collision
+    int i=0;
+    for(auto n:chunks_){
+        cout<<i++<<endl;
+        for(auto m:chunks_){
+            if (n.first==m.first) continue;
+
+            bool common = false;
+            for (auto k:n.second.collided_primer_){
+                if (common) break;
+
+                for (auto l:m.second.collided_primer_) {
+                    if (common) break;
+
+                    if (k==l) {
+                        n.second.degree++;
+                        common= true;
+                    }
+                }
+            }
+        }
+    }
+
+    vector<int> common_collision_chunk_degree(10000,0);
+    for(auto n:chunks_){
+        if (n.second.degree>common_collision_chunk_degree.size()-1){
+            for (int i = 0; i < n.second.degree-common_collision_chunk_degree.size()+1; ++i) {
+                common_collision_chunk_degree.push_back(0);
+            }
+        }
+        common_collision_chunk_degree[n.second.degree]++;
+    }
+
+
+    myfile.open ("common_collision_chunk_degree.csv",ios::out | ios::trunc);
+    for(int i=0; i < common_collision_chunk_degree.size(); i++){
+        // write into file
+        myfile<<i<<","<<common_collision_chunk_degree[i]<<endl;
+    }
+    myfile.close();
+}
+
+void variable_stranding::collisions_among_primer() {
+
+}
+
+
 
 
 void variable_stranding::compare_nostrand_with_fixed200() {
@@ -302,6 +372,27 @@ void variable_stranding::compare_nostrand_with_fixed200() {
 
 void variable_stranding::collision_analysis() {
     ofstream myfile;
+    // collision distance distribution
+    sort(collisions_.begin(), collisions_.end());
+
+    int last = 0;
+    int portion_cut=0;
+    int portion_trans=0;
+    int cut_primers=0;
+    int trans_primers=0;
+    for(auto n:collisions_){
+        if ((n.first-last)>450) {
+            portion_cut+=(n.first-last);
+            cut_primers++;
+        }
+        else {
+            portion_trans+=(n.first-last);
+            trans_primers++;
+        }
+        last = n.first;
+    }
+    cout<<portion_cut<<" "<<portion_trans<<endl;
+    cout<<cut_primers<<" "<<trans_primers<<endl;
     //collision length distribution
     /*vector<int> collsion_length_distribution(22,0);
     for(auto n:collisions_){
