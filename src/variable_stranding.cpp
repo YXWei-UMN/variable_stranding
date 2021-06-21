@@ -62,10 +62,10 @@ variable_stranding::variable_stranding(string blastfile) {
 
         if (primers_.find(primerID)==primers_.end()){
             primer p;
-            p.collided_file_.emplace_back(strand_ID/100);
+            p.collided_file_.emplace(strand_ID/100);
             primers_.emplace(primerID,p);
         } else{
-            primers_.find(primerID)->second.collided_file_.emplace_back(strand_ID/100);
+            primers_.find(primerID)->second.collided_file_.emplace(strand_ID/100);
         }
 
         if (chunk_pairs_.find(strand_ID/100)==chunk_pairs_.end()){

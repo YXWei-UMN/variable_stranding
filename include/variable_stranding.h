@@ -21,13 +21,13 @@ public:
 class primer{
 public:
     vector<pair<long,long>> collisions_;
-    vector<int> collided_file_;
+    unordered_set<int> collided_file_;
 };
 
 class chunk{
 public:
     int degree=0;
-    vector<string> collided_primer_;
+    unordered_set<string> collided_primer_;
     ~chunk(){};
 };
 /*struct collision_CmpByPtr {
