@@ -30,6 +30,7 @@ variable_stranding::variable_stranding(string blastfile) {
         long strand_ID = stol(payloadID.substr(7));
 
         total_collision_num_++;
+/*
 
         //delete payload#
         line.erase(0, line.find(delimiter) + delimiter.length());
@@ -56,68 +57,49 @@ variable_stranding::variable_stranding(string blastfile) {
         long end = stol(start_pos)<stol(end_pos)?stol(end_pos):stol(start_pos);
         start+=g_strand_len_1*strand_ID;
         end+=g_strand_len_1*strand_ID;
-        // code for detect overlong collision but not screen out
-        /*if (end-start>=11) {
-            primers_.find(primerID)->second.first= true;
-        }*/
-        // initialize collision vector to check the distance between adjacent collisions
-        //collisions_.emplace_back(make_pair(start,end));
-        // initialize corresponding primer with its collisions
+*/
+
+
         if (primers_.find(primerID)==primers_.end()){
             primer p;
-            p.collisions_.emplace_back(make_pair(start,end));
+            p.collided_file_.emplace_back(strand_ID/100);
             primers_.emplace(primerID,p);
         } else{
-            primers_.find(primerID)->second.collisions_.emplace_back(make_pair(start,end));
+            primers_.find(primerID)->second.collided_file_.emplace_back(strand_ID/100);
         }
 
-        // initialize corresponding strand with its collisions
-        /*if (strands_.find(strand_ID)==strands_.end()){
-            strand tmp_strand;
-            tmp_strand.collisions_.push_back(make_pair(start,end));
-            strands_.emplace(strand_ID,tmp_strand);
-        } else{
-            strands_.find(strand_ID)->second.collisions_.push_back(make_pair(start,end));
-        }*/
-
-        if (primers_.find(primerID)==primers_.end()){
-            primer p;
-            p.collided_file_.emplace_back(strand_ID);
-            primers_.emplace(primerID,p);
-        } else{
-            primers_.find(primerID)->second.collided_file_.emplace_back(strand_ID);
+        if (chunk_pairs_.find(strand_ID/100)==chunk_pairs_.end()){
+            unordered_set<int> related_chunks;
+            chunk_pairs_.emplace(strand_ID/100,related_chunks);
         }
 
         // one chunk 4KB  one strand 40 bytes. One chunk = 100 strand
-        if (chunks_.find(strand_ID)==chunks_.end()){
+        /*if (chunks_.find(strand_ID/100)==chunks_.end()){
             chunk f;
             f.collided_primer_.emplace_back(primerID);
-            chunks_.emplace(strand_ID,f);
+            chunks_.emplace(strand_ID/100,f);
         } else{
-            chunks_.find(strand_ID)->second.collided_primer_.emplace_back(primerID);
-        }
-
-
-       /* for (long i = start; i <= end; ++i) {
-            nts_[i-1]++;
-            // i-1 because blast report nt position from 0?
+            chunks_.find(strand_ID/100)->second.collided_primer_.emplace_back(primerID);
         }*/
+
+
+
     }
 
 }
 
 void variable_stranding::collisions_among_chunks() {
-    cout<<"chunk number: "<<chunks_.size()<<endl;
-
+    cout<<"chunk number: "<<chunk_pairs_.size()<<endl;
+    ofstream myfile;
     // collision number of each chunks
     /*vector<int> collision_distribution_among_chunks(28002,0);
     for(auto n:chunks_){
         collision_distribution_among_chunks[n.second.collided_primer_.size()]++;
-    }*/
+    }
 
 
-    ofstream myfile;
-    /*myfile.open ("collision distribution among chunks.csv",ios::out | ios::trunc);
+
+   myfile.open ("collision distribution among primers_video_4KBchunk.csv",ios::out | ios::trunc);
     for(int i=0; i < collision_distribution_among_chunks.size(); i++){
         // write into file
         myfile<<i<<","<<collision_distribution_among_chunks[i]<<endl;
@@ -130,26 +112,29 @@ void variable_stranding::collisions_among_chunks() {
     // for each chunk/file, go over others to see whether they have common collision
     vector<int> common_collision_chunk_degree(10000,0);
     int i=0;
-    for(auto n:chunks_){
-        set<int> common_files;
-        int s=0;
-        for(auto m:n.second.collided_primer_){
-            auto p = primers_.find(m);
-            for(auto f:p->second.collided_file_){
-                s++;
-                common_files.emplace(f);
+    for(auto n:primers_){
+        i++;
+        cout<<i<<endl;
+        for(auto m:n.second.collided_file_){
+            auto chunk = chunk_pairs_.find(m);
+            for(auto f:n.second.collided_file_){
+                if (f==m) continue;
+                chunk->second.emplace(f);
             }
         }
-        n.second.degree=common_files.size();
-        if (n.second.degree>1+common_collision_chunk_degree.size()){
-            for (int j = n.second.degree; j > 1+common_collision_chunk_degree.size() ; --j) {
+    }
+    for(auto s:chunk_pairs_){
+        if (s.second.size()>1+common_collision_chunk_degree.size()){
+            for (int j = s.second.size(); j > 1+common_collision_chunk_degree.size() ; --j) {
                 common_collision_chunk_degree.push_back(0);
             }
         }
-        common_collision_chunk_degree[n.second.degree]++;
+        common_collision_chunk_degree[s.second.size()]++;
     }
 
-    myfile.open ("common_collision_chunk_degree.csv",ios::out | ios::trunc);
+
+    cout<<"Start to write file"<<endl;
+    myfile.open ("common_collision_chunk_degree_linux_200strand.csv",ios::out | ios::trunc);
     for(int i=0; i < common_collision_chunk_degree.size(); i++){
         // write into file
         myfile<<i<<","<<common_collision_chunk_degree[i]<<endl;
@@ -158,7 +143,53 @@ void variable_stranding::collisions_among_chunks() {
 }
 
 void variable_stranding::collisions_among_primer() {
+    cout<<"collided primer number: "<<primers_.size()<<endl;
+    ofstream myfile;
+    /*// collision number of each chunks
+    vector<int> collision_distribution_among_primers(33000,0);
+    for(auto n:primers_){
+        collision_distribution_among_primers[n.second.collided_file_.size()]++;
+    }
 
+
+
+    myfile.open ("collision distribution among primers_video_4KBchunk.csv",ios::out | ios::trunc);
+    for(int i=0; i < collision_distribution_among_primers.size(); i++){
+        // write into file
+        myfile<<i<<","<<collision_distribution_among_primers[i]<<endl;
+    }
+    myfile.close();*/
+
+
+    vector<int> common_collision_primer_degree(10000,0);
+    int i=0;
+    for(auto n:primers_){
+        i++;
+        if (i%100==0) {
+            cout<<i<<endl;
+        }
+        set<string> common_primers;
+        for(auto m:n.second.collided_file_){
+            auto p = chunks_.find(m);
+            for(auto f:p->second.collided_primer_){
+                common_primers.emplace(f);
+            }
+        }
+        if (common_primers.size()>1+common_collision_primer_degree.size()){
+            for (int j = common_primers.size(); j > 1+common_collision_primer_degree.size() ; --j) {
+                common_collision_primer_degree.push_back(0);
+            }
+        }
+        common_collision_primer_degree[common_primers.size()]++;
+        common_primers.clear();
+    }
+    cout<<"Start to write file"<<endl;
+    myfile.open ("common_collision_primer_degree_linux_200strand.csv",ios::out | ios::trunc);
+    for(int i=0; i < common_collision_primer_degree.size(); i++){
+        // write into file
+        myfile<<i<<","<<common_collision_primer_degree[i]<<endl;
+    }
+    myfile.close();
 }
 
 

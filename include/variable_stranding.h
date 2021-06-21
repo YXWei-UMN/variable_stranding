@@ -43,9 +43,10 @@ public:
     // 1st: primer ID  2nd: <if has collision longer than 20, # of collisions this primer has>
     unordered_map<string,primer> primers_;
     // 1st: strand ID  2nd: collision number
-    unordered_map<long,strand> strands_;
+    unordered_map<int,strand> strands_;
     vector<pair<long,long>> collisions_;
-    unordered_map<long,chunk> chunks_;
+    unordered_map<int,chunk> chunks_;
+    unordered_map<int,unordered_set<int>> chunk_pairs_;
 
 
     int total_collision_num_=0;
