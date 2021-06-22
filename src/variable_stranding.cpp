@@ -68,28 +68,23 @@ variable_stranding::variable_stranding(string blastfile) {
             primers_.find(primerID)->second.collided_file_.emplace(strand_ID/100);
         }
 
-        if (chunk_pairs_.find(strand_ID/100)==chunk_pairs_.end()){
-            unordered_set<int> related_chunks;
-            chunk_pairs_.emplace(strand_ID/100,related_chunks);
-        }
 
         // one chunk 4KB  one strand 40 bytes. One chunk = 100 strand
-        /*if (chunks_.find(strand_ID/100)==chunks_.end()){
+        if (chunks_.find(strand_ID/100)==chunks_.end()){
             chunk f;
-            f.collided_primer_.emplace_back(primerID);
+            f.collided_primer_.emplace(primerID);
             chunks_.emplace(strand_ID/100,f);
         } else{
-            chunks_.find(strand_ID/100)->second.collided_primer_.emplace_back(primerID);
-        }*/
+            chunks_.find(strand_ID/100)->second.collided_primer_.emplace(primerID);
+        }
 
 
 
     }
-
 }
 
 void variable_stranding::collisions_among_chunks() {
-    cout<<"chunk number: "<<chunk_pairs_.size()<<endl;
+    cout<<"chunk number: "<<chunks_.size()<<endl;
     ofstream myfile;
     // collision number of each chunks
     /*vector<int> collision_distribution_among_chunks(28002,0);
@@ -110,27 +105,28 @@ void variable_stranding::collisions_among_chunks() {
 
 
     // for each chunk/file, go over others to see whether they have common collision
-    vector<int> common_collision_chunk_degree(10000,0);
+    vector<int> common_collision_chunk_degree(360000,0);
     int i=0;
-    for(auto n:primers_){
+    for(auto n:chunks_){
         i++;
         cout<<i<<endl;
-        for(auto m:n.second.collided_file_){
-            auto chunk = chunk_pairs_.find(m);
-            for(auto f:n.second.collided_file_){
-                if (f==m) continue;
-                chunk->second.emplace(f);
+        unordered_set<int> commons;
+        for(auto m:n.second.collided_primer_){
+            for(auto f:primers_[m].collided_file_){
+                commons.emplace(f);
             }
         }
-    }
-    for(auto s:chunk_pairs_){
-        if (s.second.size()>1+common_collision_chunk_degree.size()){
-            for (int j = s.second.size(); j > 1+common_collision_chunk_degree.size() ; --j) {
+        /*if (commons.size()>1+common_collision_chunk_degree.size()){
+            for (int j = commons.size(); j > 1+common_collision_chunk_degree.size() ; --j) {
                 common_collision_chunk_degree.push_back(0);
             }
-        }
-        common_collision_chunk_degree[s.second.size()]++;
+        }*/
+        common_collision_chunk_degree[commons.size()]++;
     }
+
+
+
+
 
 
     cout<<"Start to write file"<<endl;
@@ -477,7 +473,7 @@ void variable_stranding::collision_analysis() {
 }
 
 
-void variable_stranding::primer_analysis() {
+/*void variable_stranding::primer_analysis() {
     // check the portion of primers that has collision longer than 20
     cout<<"collided primers:"<<primers_.size()<<endl;
     cout<<"collision number:"<<total_collision_num_<<endl;
@@ -488,9 +484,9 @@ void variable_stranding::primer_analysis() {
     for(auto i:primers_){
         // primers with different collision number
         int x_axis = i.second.collisions_.size();
-        /*if (if_count_intra_redundant_collision){
+        *//*if (if_count_intra_redundant_collision){
             x_axis+=i.second->redundant_collision;
-        }*/
+        }*//*
         if(primer_distribution.size()<x_axis+1){
             for (int j = primer_distribution.size(); j <= x_axis+1; ++j) {
                 primer_distribution.push_back(0);
@@ -498,9 +494,9 @@ void variable_stranding::primer_analysis() {
         }
         primer_distribution[x_axis]++;
 
-        /*if (i.second.first){
+        *//*if (i.second.first){
             overlong_collision++;
-        }*/
+        }*//*
     }
 
     ofstream myfile;
@@ -522,8 +518,8 @@ void variable_stranding::primer_analysis() {
 
     }
     myfile.close();
-    /*cout<<"primers with overlong collision:"<<overlong_collision<<endl;
-    cout<<"portion of good primer:"<<(primers_.size()-overlong_collision)/(primers_.size()*1.0)<<endl;*/
+    *//*cout<<"primers with overlong collision:"<<overlong_collision<<endl;
+    cout<<"portion of good primer:"<<(primers_.size()-overlong_collision)/(primers_.size()*1.0)<<endl;*//*
 
 
     // record the distance of collisions for a primer (if this primer has more than one collision)
@@ -560,7 +556,7 @@ void variable_stranding::primer_analysis() {
 
 
     //TODO print the distance of all adjacent collision with collisions_ vector
-}
+}*/
 
 void variable_stranding::strand_analysis() {
     cout<<"strand number:"<<nts_.size()/200<<endl;

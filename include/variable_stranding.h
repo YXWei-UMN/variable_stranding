@@ -20,13 +20,11 @@ public:
 
 class primer{
 public:
-    vector<pair<long,long>> collisions_;
     unordered_set<int> collided_file_;
 };
 
 class chunk{
 public:
-    int degree=0;
     unordered_set<string> collided_primer_;
     ~chunk(){};
 };
@@ -46,7 +44,7 @@ public:
     unordered_map<int,strand> strands_;
     vector<pair<long,long>> collisions_;
     unordered_map<int,chunk> chunks_;
-    unordered_map<int,unordered_set<int>> chunk_pairs_;
+
 
 
     int total_collision_num_=0;
