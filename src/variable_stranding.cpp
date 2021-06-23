@@ -137,7 +137,7 @@ void variable_stranding::collisions_among_primer() {
     cout<<"collided primer number: "<<primers_.size()<<endl;
     ofstream myfile;
     // collision number of each chunks
-    vector<int> collision_distribution_among_primers(33000,0);
+    vector<int> collision_distribution_among_primers(chunks_.size(),0);
     for(auto n:primers_){
         collision_distribution_among_primers[n.second.collided_file_.size()]++;
     }
