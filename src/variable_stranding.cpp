@@ -136,7 +136,7 @@ void variable_stranding::collisions_among_chunks() {
 void variable_stranding::collisions_among_primer() {
     cout<<"collided primer number: "<<primers_.size()<<endl;
     ofstream myfile;
-    /*// collision number of each chunks
+    // collision number of each chunks
     vector<int> collision_distribution_among_primers(33000,0);
     for(auto n:primers_){
         collision_distribution_among_primers[n.second.collided_file_.size()]++;
@@ -144,15 +144,15 @@ void variable_stranding::collisions_among_primer() {
 
 
 
-    myfile.open ("collision distribution among primers_video_4KBchunk.csv",ios::out | ios::trunc);
+    myfile.open ("collision distribution among primers "+g_blast_Result+".csv",ios::out | ios::trunc);
     for(int i=0; i < collision_distribution_among_primers.size(); i++){
         // write into file
         myfile<<i<<","<<collision_distribution_among_primers[i]<<endl;
     }
-    myfile.close();*/
+    myfile.close();
 
 
-    vector<int> common_collision_primer_degree(10000,0);
+    /*vector<int> common_collision_primeblastfiler_degree(10000,0);
     int i=0;
     for(auto n:primers_){
         i++;
@@ -180,7 +180,7 @@ void variable_stranding::collisions_among_primer() {
         // write into file
         myfile<<i<<","<<common_collision_primer_degree[i]<<endl;
     }
-    myfile.close();
+    myfile.close();*/
 }
 
 
