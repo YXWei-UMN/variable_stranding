@@ -105,7 +105,7 @@ void variable_stranding::collisions_among_chunks() {
 
 
     // for each chunk/file, go over others to see whether they have common collision
-    vector<int> common_collision_chunk_degree(360000,0);
+    vector<int> common_collision_chunk_degree(chunks_.size(),0);
     int i=0;
     for(auto n:chunks_){
         i++;
@@ -122,15 +122,10 @@ void variable_stranding::collisions_among_chunks() {
             }
         }*/
         common_collision_chunk_degree[commons.size()]++;
+        cout<<commons.size()<<" "<<common_collision_chunk_degree[commons.size()]<<endl;
     }
-
-
-
-
-
-
     cout<<"Start to write file"<<endl;
-    myfile.open ("common_collision_chunk_degree_linux_200strand.csv",ios::out | ios::trunc);
+    myfile.open ("common_collision_chunk_degree_video1.3G_200strand.csv",ios::out | ios::trunc);
     for(int i=0; i < common_collision_chunk_degree.size(); i++){
         // write into file
         myfile<<i<<","<<common_collision_chunk_degree[i]<<endl;

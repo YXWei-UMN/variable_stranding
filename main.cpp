@@ -19,6 +19,7 @@ int main(int argc, char** argv) {
     }
 
 
+
     variable_stranding stranding = variable_stranding(g_blast_Result);
 
     // nt sequences has problem!!!!!!!!!!!!!!!!!!!!!!!
