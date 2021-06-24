@@ -86,6 +86,18 @@ variable_stranding::variable_stranding(string blastfile) {
 void variable_stranding::collisions_among_chunks() {
     cout<<"chunk number: "<<chunks_.size()<<endl;
     ofstream myfile;
+    int all_collide_primers = 0;
+    for(auto n:chunks_){
+        all_collide_primers+=n.second.collided_primer_.size();
+    }
+    cout<<"average collide primer per chunk: "<<all_collide_primers/(chunks_.size()*1.0)<<endl;
+
+    int all_collide_chunks = 0;
+    for(auto n:primers_){
+        all_collide_chunks+=n.second.collided_file_.size();
+    }
+    cout<<"average collide chunk per primer: "<<all_collide_chunks/(primers_.size()*1.0)<<endl;
+
     // collision number of each chunks
     /*vector<int> collision_distribution_among_chunks(28002,0);
     for(auto n:chunks_){
@@ -105,7 +117,7 @@ void variable_stranding::collisions_among_chunks() {
 
 
     // for each chunk/file, go over others to see whether they have common collision
-    vector<int> common_collision_chunk_degree(chunks_.size(),0);
+    /*vector<int> common_collision_chunk_degree(chunks_.size(),0);
     int i=0;
     for(auto n:chunks_){
         i++;
@@ -113,14 +125,15 @@ void variable_stranding::collisions_among_chunks() {
         unordered_set<int> commons;
         for(auto m:n.second.collided_primer_){
             for(auto f:primers_[m].collided_file_){
+                if (commons.find(f)!=commons.end()) {
+                    cout<<"find duplicate one "<<f<<endl;
+                    cout<<commons.size()<<endl;
+                    commons.emplace(f);
+                    cout<<commons.size()<<endl;
+                }
                 commons.emplace(f);
             }
         }
-        /*if (commons.size()>1+common_collision_chunk_degree.size()){
-            for (int j = commons.size(); j > 1+common_collision_chunk_degree.size() ; --j) {
-                common_collision_chunk_degree.push_back(0);
-            }
-        }*/
         common_collision_chunk_degree[commons.size()]++;
         cout<<commons.size()<<" "<<common_collision_chunk_degree[commons.size()]<<endl;
     }
@@ -130,7 +143,7 @@ void variable_stranding::collisions_among_chunks() {
         // write into file
         myfile<<i<<","<<common_collision_chunk_degree[i]<<endl;
     }
-    myfile.close();
+    myfile.close();*/
 }
 
 void variable_stranding::collisions_among_primer() {
