@@ -86,11 +86,17 @@ variable_stranding::variable_stranding(string blastfile) {
 void variable_stranding::collisions_among_chunks() {
     cout<<"chunk number: "<<chunks_.size()<<endl;
     ofstream myfile;
-    int all_collide_primers = 0;
+    int all_collide_primers_small_100 = 0;
+    int all_collide_primers_big_100 = 0;
+
     for(auto n:chunks_){
-        all_collide_primers+=n.second.collided_primer_.size();
+        if(n.second.collided_primer_.size()>=100)
+            all_collide_primers_big_100+=n.second.collided_primer_.size();
+        else
+            all_collide_primers_small_100+=n.second.collided_primer_.size();
     }
-    cout<<"average collide primer per chunk: "<<all_collide_primers/(chunks_.size()*1.0)<<endl;
+    cout<<"big 100 "<<all_collide_primers_big_100<<" small 100"<<all_collide_primers_small_100<<endl;
+    //cout<<"average collide primer per chunk: "<<all_collide_primers/(chunks_.size()*1.0)<<endl;
 
     int all_collide_chunks = 0;
     for(auto n:primers_){
