@@ -86,38 +86,27 @@ variable_stranding::variable_stranding(string blastfile) {
 void variable_stranding::collisions_among_chunks() {
     cout<<"chunk number: "<<chunks_.size()<<endl;
     ofstream myfile;
-    int all_collide_primers_small_100 = 0;
-    int all_collide_primers_big_100 = 0;
 
-    for(auto n:chunks_){
-        if(n.second.collided_primer_.size()>=69)
-            all_collide_primers_big_100+=n.second.collided_primer_.size();
-        else
-            all_collide_primers_small_100+=n.second.collided_primer_.size();
-    }
-    cout<<"big 100 "<<all_collide_primers_big_100<<" small 100"<<all_collide_primers_small_100<<endl;
-    cout<<"average collide primer per chunk: "<<(all_collide_primers_big_100+all_collide_primers_small_100)/(chunks_.size()*1.0)<<endl;
-
-    int all_collide_chunks = 0;
+    /*int all_collide_chunks = 0;
     for(auto n:primers_){
         all_collide_chunks+=n.second.collided_file_.size();
     }
-    cout<<"average collide chunk per primer: "<<all_collide_chunks/(primers_.size()*1.0)<<endl;
+    cout<<"average collide chunk per primer: "<<all_collide_chunks/(primers_.size()*1.0)<<endl;*/
 
     // collision number of each chunks
-    /*vector<int> collision_distribution_among_chunks(28002,0);
+    vector<int> collision_distribution_among_chunks(28002,0);
     for(auto n:chunks_){
         collision_distribution_among_chunks[n.second.collided_primer_.size()]++;
     }
 
 
 
-   myfile.open ("collision distribution among primers_video_4KBchunk.csv",ios::out | ios::trunc);
+    myfile.open ("collide_primer_per_chunk_video.csv",ios::out | ios::trunc);
     for(int i=0; i < collision_distribution_among_chunks.size(); i++){
         // write into file
         myfile<<i<<","<<collision_distribution_among_chunks[i]<<endl;
     }
-    myfile.close();*/
+    myfile.close();
 
 
 
@@ -156,7 +145,7 @@ void variable_stranding::collisions_among_primer() {
     cout<<"collided primer number: "<<primers_.size()<<endl;
     ofstream myfile;
     // collision number of each chunks
-    vector<int> collision_distribution_among_primers(chunks_.size(),0);
+    /*vector<int> collision_distribution_among_primers(chunks_.size(),0);
     for(auto n:primers_){
         collision_distribution_among_primers[n.second.collided_file_.size()]++;
     }
@@ -168,10 +157,10 @@ void variable_stranding::collisions_among_primer() {
         // write into file
         myfile<<i<<","<<collision_distribution_among_primers[i]<<endl;
     }
-    myfile.close();
+    myfile.close();*/
 
 
-    /*vector<int> common_collision_primeblastfiler_degree(10000,0);
+    vector<int> common_collision_primer_degree(28010,0);
     int i=0;
     for(auto n:primers_){
         i++;
@@ -185,11 +174,6 @@ void variable_stranding::collisions_among_primer() {
                 common_primers.emplace(f);
             }
         }
-        if (common_primers.size()>1+common_collision_primer_degree.size()){
-            for (int j = common_primers.size(); j > 1+common_collision_primer_degree.size() ; --j) {
-                common_collision_primer_degree.push_back(0);
-            }
-        }
         common_collision_primer_degree[common_primers.size()]++;
         common_primers.clear();
     }
@@ -199,7 +183,7 @@ void variable_stranding::collisions_among_primer() {
         // write into file
         myfile<<i<<","<<common_collision_primer_degree[i]<<endl;
     }
-    myfile.close();*/
+    myfile.close();
 }
 
 
