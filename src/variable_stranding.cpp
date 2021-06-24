@@ -90,13 +90,13 @@ void variable_stranding::collisions_among_chunks() {
     int all_collide_primers_big_100 = 0;
 
     for(auto n:chunks_){
-        if(n.second.collided_primer_.size()>=100)
+        if(n.second.collided_primer_.size()>=69)
             all_collide_primers_big_100+=n.second.collided_primer_.size();
         else
             all_collide_primers_small_100+=n.second.collided_primer_.size();
     }
     cout<<"big 100 "<<all_collide_primers_big_100<<" small 100"<<all_collide_primers_small_100<<endl;
-    //cout<<"average collide primer per chunk: "<<all_collide_primers/(chunks_.size()*1.0)<<endl;
+    cout<<"average collide primer per chunk: "<<(all_collide_primers_big_100+all_collide_primers_small_100)/(chunks_.size()*1.0)<<endl;
 
     int all_collide_chunks = 0;
     for(auto n:primers_){
