@@ -44,6 +44,7 @@ variable_stranding::variable_stranding(string blast_result_path) {
     listFiles(blast_result_path, true);
     fstream result_file;
 
+    int x=0;
     for(auto n:all_files_){
         cout<<n<<endl;
         result_file.open(n,ios::in);
@@ -113,6 +114,7 @@ variable_stranding::variable_stranding(string blast_result_path) {
                 chunks_.find(strand_ID/100)->second.collided_primer_.emplace(primerID);
             }
         }
+        cout<<x++<<"th payload, accumulated collided primers:"<<primers_.size()<<endl;
         result_file.close();
     }
 }
