@@ -1,14 +1,5 @@
-#blast_Result ./blast_evalue50_swap_5_200strand
-#blast_Result ./blast_test_C_200strand
-#blast_Result ./blast_random_C_200strand
-#total_nt_number 658613000
+blast_result_path /home/eason/CLionProjects/variable_stranding/blast_result_path/
 
-#blast_Result ./result_linux_200strand
-blast_Result ./blast_result_evalue50_200strand_1Mcollision
-#blast_Result ./blast_result_evalue50_C_no_strand
-#blast_Result ./blast_result_evalue50_T_nostrand_1Mcollision
-#blast_Result ./blast_result_evalue20_no_strand
-total_nt_number 658613166
 
 
 

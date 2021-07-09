@@ -9,7 +9,8 @@
 #include <unordered_map>
 #include <vector>
 #include "global.h"
-
+#include <dirent.h>
+#include <sys/stat.h>
 using namespace std;
 
 
@@ -37,7 +38,7 @@ public:
 class variable_stranding {
 public:
     // how many collisions have go across the ith nt
-    vector<int> nts_;
+    vector<string> all_files_;
     // 1st: primer ID  2nd: <if has collision longer than 20, # of collisions this primer has>
     unordered_map<string,primer> primers_;
     // 1st: strand ID  2nd: collision number
@@ -51,6 +52,7 @@ public:
 
     variable_stranding(string blastfile);
     ~variable_stranding(){}
+    void listFiles(string baseDir, bool recursive);
     void greedy();
     void fixed_length();
     void primer_analysis();

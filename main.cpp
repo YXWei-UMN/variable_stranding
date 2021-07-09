@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
 
 
-    variable_stranding stranding = variable_stranding(g_blast_Result);
+    variable_stranding stranding = variable_stranding(g_blast_result_path);
 
     // nt sequences has problem!!!!!!!!!!!!!!!!!!!!!!!
     /*//stranding.greedy();

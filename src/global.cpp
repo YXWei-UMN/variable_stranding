@@ -6,7 +6,7 @@
 
 
 
-string g_blast_Result;
+string g_blast_result_path;
 int g_strand_len;
 int g_strand_len_1;
 int g_strand_len_2;
@@ -58,8 +58,8 @@ int Parse(string cfgfile){
             case hash_("total_nt_number"):
                 g_total_nt_number = stol(value);
                 break;
-            case hash_("blast_Result"):
-                g_blast_Result = value;
+            case hash_("blast_result_path"):
+                g_blast_result_path = value;
                 break;
             case hash_("if_baseline"):
                 g_if_baseline = (value=="true");

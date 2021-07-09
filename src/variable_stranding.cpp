@@ -6,30 +6,65 @@
 #include <sstream>
 #include <set>
 
-variable_stranding::variable_stranding(string blastfile) {
-
-    //nts_.resize(g_total_nt_number,0);
-
-
-    fstream result_file(blastfile,ios::in);
-    if (result_file.fail()) {
-        cerr << "fail to open blastfile:" << blastfile << "!\n";
+bool isDir(string dir)
+{
+    struct stat fileInfo;
+    stat(dir.c_str(), &fileInfo);
+    if (S_ISDIR(fileInfo.st_mode)) {
+        return true;
+    } else {
+        return false;
     }
-    string line;
-    while(getline(result_file,line)){
-        if (line.size()<=1 || line[0]== '#')
-            continue;
+}
 
-        string delimiter = "\t";
-        //record primerID and how many collisions this primer has
-        string primerID =line.substr(0, line.find(delimiter));
-        //delete primer#
-        line.erase(0, line.find(delimiter) + delimiter.length());
-        //record payloadID to indicate corresponding collision on nt sequences
-        string payloadID = line.substr(0, line.find(delimiter));
-        long strand_ID = stol(payloadID.substr(7));
+void variable_stranding::listFiles(string baseDir, bool recursive)
+{
+    DIR *dp;
+    struct dirent *dirp;
+    if ((dp = opendir(baseDir.c_str())) == NULL) {
+        cout << "[ERROR: " << errno << " ] Couldn't open " << baseDir << "." << endl;
+        return;
+    } else {
+        while ((dirp = readdir(dp)) != NULL) {
+            if (dirp->d_name != string(".") && dirp->d_name != string("..")) {
+                if (isDir(baseDir + dirp->d_name) == true && recursive == true) {
+                    //all_files_.push_back(baseDir + dirp->d_name);
+                    listFiles(baseDir + dirp->d_name + "/", true);
+                } else {
+                    all_files_.push_back(baseDir + dirp->d_name);
+                }
+            }
+        }
+        closedir(dp);
+    }
+}
 
-        total_collision_num_++;
+
+variable_stranding::variable_stranding(string blast_result_path) {
+    listFiles(blast_result_path, true);
+    fstream result_file;
+
+    for(auto n:all_files_){
+        cout<<n<<endl;
+        result_file.open(n,ios::in);
+        if (result_file.fail()) {
+            cerr << "fail to open blastfile:" << n << "!\n";
+        }
+        string line;
+        while(getline(result_file,line)){
+            if (line.size()<=1 || line[0]== '#')
+                continue;
+
+            string delimiter = "\t";
+            //record primerID and how many collisions this primer has
+            string primerID =line.substr(0, line.find(delimiter));
+            //delete primer#
+            line.erase(0, line.find(delimiter) + delimiter.length());
+            //record payloadID to indicate corresponding collision on nt sequences
+            string payloadID = line.substr(0, line.find(delimiter));
+            long strand_ID = stol(payloadID.substr(7));
+
+            total_collision_num_++;
 /*
 
         //delete payload#
@@ -60,26 +95,25 @@ variable_stranding::variable_stranding(string blastfile) {
 */
 
 
-        if (primers_.find(primerID)==primers_.end()){
-            primer p;
-            p.collided_file_.emplace(strand_ID/100);
-            primers_.emplace(primerID,p);
-        } else{
-            primers_.find(primerID)->second.collided_file_.emplace(strand_ID/100);
+            if (primers_.find(primerID)==primers_.end()){
+                primer p;
+                p.collided_file_.emplace(strand_ID/100);
+                primers_.emplace(primerID,p);
+            } else{
+                primers_.find(primerID)->second.collided_file_.emplace(strand_ID/100);
+            }
+
+
+            // one chunk 4KB  one strand 40 bytes. One chunk = 100 strand
+            if (chunks_.find(strand_ID/100)==chunks_.end()){
+                chunk f;
+                f.collided_primer_.emplace(primerID);
+                chunks_.emplace(strand_ID/100,f);
+            } else{
+                chunks_.find(strand_ID/100)->second.collided_primer_.emplace(primerID);
+            }
         }
-
-
-        // one chunk 4KB  one strand 40 bytes. One chunk = 100 strand
-        if (chunks_.find(strand_ID/100)==chunks_.end()){
-            chunk f;
-            f.collided_primer_.emplace(primerID);
-            chunks_.emplace(strand_ID/100,f);
-        } else{
-            chunks_.find(strand_ID/100)->second.collided_primer_.emplace(primerID);
-        }
-
-
-
+        result_file.close();
     }
 }
 
@@ -471,235 +505,7 @@ void variable_stranding::collision_analysis() {
 }
 
 
-/*void variable_stranding::primer_analysis() {
-    // check the portion of primers that has collision longer than 20
-    cout<<"collided primers:"<<primers_.size()<<endl;
-    cout<<"collision number:"<<total_collision_num_<<endl;
-    cout<<"total collision/total collided primer:"<<total_collision_num_/(primers_.size()*1.0)<<endl;
 
-    vector<int> primer_distribution;
-    long overlong_collision=0;
-    for(auto i:primers_){
-        // primers with different collision number
-        int x_axis = i.second.collisions_.size();
-        *//*if (if_count_intra_redundant_collision){
-            x_axis+=i.second->redundant_collision;
-        }*//*
-        if(primer_distribution.size()<x_axis+1){
-            for (int j = primer_distribution.size(); j <= x_axis+1; ++j) {
-                primer_distribution.push_back(0);
-            }
-        }
-        primer_distribution[x_axis]++;
-
-        *//*if (i.second.first){
-            overlong_collision++;
-        }*//*
-    }
-
-    ofstream myfile;
-    double portion_primer=0;
-    double portion_collision=0;
-    myfile.open ("primer_distribution.csv",ios::out | ios::trunc);
-    for(int i=1; i < primer_distribution.size(); i++){
-        // Cumulative distribution function (cdf) of primer
-        if (primer_distribution[i]==0) continue;
-
-        portion_primer+=(primer_distribution[i]/(primers_.size()*1.0));
-
-        // Cumulative distribution function (cdf) of collision
-        portion_collision+=(primer_distribution[i]*i/(total_collision_num_*1.0));
-
-
-        // write into file
-        myfile<<portion_primer<<","<<portion_collision<<","<<primer_distribution[i]<<endl;
-
-    }
-    myfile.close();
-    *//*cout<<"primers with overlong collision:"<<overlong_collision<<endl;
-    cout<<"portion of good primer:"<<(primers_.size()-overlong_collision)/(primers_.size()*1.0)<<endl;*//*
-
-
-    // record the distance of collisions for a primer (if this primer has more than one collision)
-    //   [0] number of primers has that collision distance lower than 200
-    //   [1] greater than 200
-    vector<int> collision_distance_inside_primer(2,0);
-
-    // calculate distance of collisions inside one primer if it has more than one collision
-    for(auto n:primers_){
-        if (n.second.collisions_.size()>1){
-            sort(n.second.collisions_.begin(), n.second.collisions_.end());
-            auto m=n.second.collisions_.begin();
-            int last_end=m->second;
-            int start=0;
-            m++;
-            bool doable=true;  // if collision distance < 200, this primer is not doable
-            while(m!=n.second.collisions_.end()){
-                start=m->first;
-                if ((start-last_end)<200) doable= false;
-                last_end=m->second;
-                m++;
-            }
-            if (doable) collision_distance_inside_primer[1]++;
-            else collision_distance_inside_primer[0]++;
-        }
-    }
-
-    myfile.open ("collision_distance_inside_primer.csv",ios::out | ios::trunc);
-    for(auto n:collision_distance_inside_primer){
-        // write into file
-        myfile<<n<<endl;
-    }
-    myfile.close();
-
-
-    //TODO print the distance of all adjacent collision with collisions_ vector
-}*/
-
-void variable_stranding::strand_analysis() {
-    cout<<"strand number:"<<nts_.size()/200<<endl;
-    vector<long int> collision_number_distribution;
-    vector<long int> collision_length_distribution(22,0);
-    vector<long int> collision_coverage_distribution(200,0);
-    // record the amount of strands that have collision
-    // only 1st/2nd/3rd third-part of the strand 200-nt
-    // or in 1+2/1+3/2+3/1+2+3 third-parts
-    vector<long int> collision_distribution_inside_strand(7,0);
-    // record the distance of collisions for a strand (if this strand has more than one collision)
-    // 1st element: distance can be negative   2nd element: number of strand has that distance
-    unordered_map<int,int> collision_distance_inside_strand;
-
-    int strand_ID=0;
-    long int total_length=0;
-    int total_coverage=0;
-    while (strand_ID < nts_.size()/200){
-        if (strands_.find(strand_ID)!=strands_.end()){
-            bool first_part=false;
-            bool second_part=false;
-            bool third_part=false;
-
-            int strand_total_collision_length=0;
-            int strand_collision_coverage=0;
-            for (int i = 0; i < 200; ++i) {
-                //every 200 nt is a strand, current nt is nt+i
-                // length
-                strand_total_collision_length+=nts_[200*strand_ID+i];
-                // coverage and inside distribution
-                if (nts_[200*strand_ID+i]!=0) {
-                    strand_collision_coverage++;
-                    // record the distribution over three part of a strand: 0-66 67-133 134-199
-                    if (i<=66)  first_part= true;
-                    else if(67<=i && i<=133) second_part= true;
-                    else    third_part= true;
-                }
-            }
-            if (first_part && second_part && third_part) collision_distribution_inside_strand[6]++;
-            else if (second_part && third_part) collision_distribution_inside_strand[5]++;
-            else if (first_part && third_part) collision_distribution_inside_strand[4]++;
-            else if (first_part && second_part) collision_distribution_inside_strand[3]++;
-            else if (third_part) collision_distribution_inside_strand[2]++;
-            else if (second_part) collision_distribution_inside_strand[1]++;
-            else if (first_part) collision_distribution_inside_strand[0]++;
-            else cout<<"no collison?? "<<strand_collision_coverage<<endl;
-
-            total_length += strand_total_collision_length;
-            total_coverage += strand_collision_coverage;
-
-            int average_length = strand_total_collision_length/strands_.find(strand_ID)->second.collisions_.size();
-
-            // it's possible average length is 0 (free strand)
-            collision_length_distribution[average_length]++;
-            collision_coverage_distribution[strand_collision_coverage]++;
-            // padding number_distribution vector
-            if(collision_number_distribution.size()<strands_.find(strand_ID)->second.collisions_.size()+1){
-                for (int j = collision_number_distribution.size(); j <= strands_.find(strand_ID)->second.collisions_.size()+1; ++j) {
-                    collision_number_distribution.push_back(0);
-                }
-            }
-            collision_number_distribution[strands_.find(strand_ID)->second.collisions_.size()]++;
-        }
-        // adjust strand for next iteration
-        strand_ID++;
-    }
-
-    ofstream myfile;
-    myfile.open ("strand_collision_number_distribution.csv",ios::out | ios::trunc);
-    for(int i=1; i < collision_number_distribution.size(); i++){
-        if (collision_number_distribution[i]==0) continue;
-        // write into file
-        myfile<<i<<","<<collision_number_distribution[i]<<endl;
-    }
-    myfile.close();
-
-    myfile.open ("strand_collision_length_distribution.csv",ios::out | ios::trunc);
-    for(int i=0; i < collision_length_distribution.size(); i++){
-        // write into file
-        myfile<<i<<","<<collision_length_distribution[i]<<endl;
-    }
-    myfile.close();
-
-    myfile.open ("strand_collision_coverage_distribution.csv",ios::out | ios::trunc);
-    for(int i=0; i < collision_coverage_distribution.size(); i++){
-        // write into file
-        myfile<<i<<","<<collision_coverage_distribution[i]<<endl;
-    }
-    myfile.close();
-
-    myfile.open ("inside_strand_collision_distribution_3parts.csv",ios::out | ios::trunc);
-    for(int i=0; i < collision_distribution_inside_strand.size(); i++){
-        // write into file
-        myfile<<i<<","<<collision_distribution_inside_strand[i]<<endl;
-    }
-    myfile.close();
-
-    // calculate distance of collisions inside one strand if it has more than one collision
-    for(auto n:strands_){
-        if (n.second.collisions_.size()>1){
-            int distance=0;
-            sort(n.second.collisions_.begin(), n.second.collisions_.end());
-            for(auto m:n.second.collisions_){
-                distance+=m.first;
-                distance-=m.second;
-            }
-            // have added the first element's start and subtracted last element's end, make it up
-            distance-=n.second.collisions_.begin()->first;
-            distance+=n.second.collisions_.back().second;
-
-            if (collision_distance_inside_strand.find(distance)==collision_distance_inside_strand.end()){
-                // don't have strand with that distance yet, insert one
-                collision_distance_inside_strand.emplace(distance,1);
-            } else{
-                collision_distance_inside_strand.find(distance)->second++;
-            }
-        }
-    }
-
-    myfile.open ("collision_distance_inside_strand.csv",ios::out | ios::trunc);
-    for(auto n:collision_distance_inside_strand){
-        // write into file
-        myfile<<n.first<<","<<n.second<<endl;
-    }
-    myfile.close();
-
-    cout<<"total collided strand:"<<strands_.size()<<"  portion:"<<strands_.size()/(nts_.size()/200*1.0)<<endl;
-    cout<<"total collision/total collided strand:"<<total_collision_num_/(strands_.size()*1.0)<<endl;
-
-    cout<<"overall average collision length (total length/collision number):"<<total_length/(total_collision_num_*1.0)<<endl;
-    cout<<"overall average collision coverage (total coverage/total collided strand):"<<(total_coverage)/(strands_.size()*1.0)<<endl;
-}
-
-
-void variable_stranding::fixed_length() {
-    int reduced_collision=0;
-    int strand_point=g_strand_len_1;
-        while(strand_point<g_total_nt_number-g_strand_len_1) {
-            reduced_collision += nts_[strand_point];
-            strand_point += g_strand_len_1;
-        }
-
-    cout << "reduced collision:" << reduced_collision << " total_collision" << total_collision_num_ << " "
-         << 100 * (reduced_collision / (total_collision_num_ * 1.0)) << "%" << endl;
-}
 
 /*
 void variable_stranding::greedy() {

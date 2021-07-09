@@ -35,7 +35,7 @@ using namespace std;
 
 #define PRIMER_CAPACITY 736
 
-extern string g_blast_Result;
+extern string g_blast_result_path;
 extern long g_total_nt_number;
 extern int g_strand_len_1;
 extern int g_strand_len_2;
