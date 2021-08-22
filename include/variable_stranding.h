@@ -42,9 +42,9 @@ public:
     // 1st: primer ID  2nd: <if has collision longer than 20, # of collisions this primer has>
     unordered_map<string,primer> primers_;
     // 1st: strand ID  2nd: collision number
-    unordered_map<int,strand> strands_;
+    /*unordered_map<int,strand> strands_;
     vector<pair<long,long>> collisions_;
-    unordered_map<int,chunk> chunks_;
+    unordered_map<int,chunk> chunks_;*/
 
 
 
@@ -53,15 +53,8 @@ public:
     variable_stranding(string blastfile);
     ~variable_stranding(){}
     void listFiles(string baseDir, bool recursive);
-    void greedy();
-    void fixed_length();
-    void primer_analysis();
-    void strand_analysis();
-    void collision_analysis();
     void collisions_among_primer();
-    void collisions_among_chunks();
-
-    void compare_nostrand_with_fixed200();
+    void different_primers(string file);
 
 };
 
